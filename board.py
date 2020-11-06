@@ -29,29 +29,28 @@ class Board:
         return self.top_left_corner or self.top_right_corner or self.bottom_left_corner or self.bottom_right_corner
 
     def _generate_regular_moves(self) -> List[dict]:
-        '''Make sure that this move is legal before performing it'''
+        '''
+        Generates all the possible regular move (i.e. cost of one from the
+        current state of the board.
+        '''
 
-        possible_moves = ['up', 'down', 'left', 'right']
+        rowof0 = np.where(self.puzzle == 0)[0][0]
+        colof0 = np.where(self.puzzle == 0)[1][0]
+
+        possible_moves = {
+            'up': (rowof0-1, colof0),
+            'down': (rowof0 + 1, colof0),
+            'left': (rowof0, colof0-1),
+            'right': (rowof0, colof0+1)
+        }
+
         regular_moves = []
 
         for move in possible_moves:
             try:
-                rowof0 = np.where(self.puzzle == 0)[0][0]
-                colof0 = np.where(self.puzzle == 0)[1][0]
                 new_puzzle = np.copy(self.puzzle)
                 start = (rowof0, colof0)
-
-                if move == 'up':
-                    end = (rowof0-1, colof0)
-
-                elif move == 'down':
-                    end = (rowof0 + 1, colof0)
-
-                elif move == 'left':
-                    end = (rowof0, colof0-1)
-
-                else:  # move == 'right'
-                    end = (rowof0, colof0+1)
+                end = possible_moves[move]
 
                 if end[0] < 0 or end[1] < 0:  # an index must be negative and we dont want that
                     continue
@@ -59,7 +58,7 @@ class Board:
                 new_puzzle[start], new_puzzle[end] = new_puzzle[end], new_puzzle[start]
                 regular_moves.append({'start': start, 'end': end, 'board': Board(new_puzzle, 1), 'simple_cost': 1})
 
-            except IndexError:
+            except IndexError:  # performing this move is not possible because the index goes out of bounds (it is not a possible child state) so skip it.
                 continue
 
         return regular_moves
