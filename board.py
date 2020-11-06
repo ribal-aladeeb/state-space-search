@@ -1,7 +1,5 @@
-from moves import Moves
 import numpy as np
 from typing import *
-
 
 class Board:
 
@@ -21,10 +19,6 @@ class Board:
         position = np.where(self.puzzle == 0)
         row = position[0][0]
         col = position[1][0]
-
-        #puzzle = np.copy(self.puzzle)
-        #corners = puzzle[::puzzle.shape[0]-1, ::puzzle.shape[1]-1]
-        #corner_x, corner_y = np.where(corners == 0)[0][0]
 
         self.top_left_corner = row == 0 and col == 0
         self.top_right_corner = row == 0 and col == self.puzzle.shape[1] - 1
@@ -63,7 +57,7 @@ class Board:
                     continue
 
                 new_puzzle[start], new_puzzle[end] = new_puzzle[end], new_puzzle[start]
-                regular_moves.append({'start': start, 'end': end, 'baord': Board(new_puzzle, 1), 'simple_cost': 1})
+                regular_moves.append({'start': start, 'end': end, 'board': Board(new_puzzle, 1), 'simple_cost': 1})
 
             except IndexError:
                 continue
