@@ -5,9 +5,9 @@ from typing import *
 
 class Board:
 
-    def __init__(self, puzzle: np.array = None):
-        self.score = 0
+    def __init__(self, puzzle: np.array = None, score=0):
         self.puzzle = puzzle
+        self.score = score
 
     def is_goal_state(self) -> bool:
         x = self.puzzle
@@ -19,17 +19,18 @@ class Board:
 
     def is_corner(self) -> bool:
         position = np.where(self.puzzle == 0)
-        rows = position[0][0]
-        cols = position[1][0]
+        row = position[0][0]
+        col = position[1][0]
 
         #puzzle = np.copy(self.puzzle)
         #corners = puzzle[::puzzle.shape[0]-1, ::puzzle.shape[1]-1]
         #corner_x, corner_y = np.where(corners == 0)[0][0]
 
-        self.is_corner.top_left = rows == 0 and cols == 0
-        self.is_corner.top_right = rows == 0 and cols == self.puzzle.shape[1] - 1
-        self.is_corner.bottom_right = rows == self.puzzle.shape[0] - 1 and cols == self.puzzle.shape[1] - 1
-        self.is_corner.bottom_left = rows == self.puzzle.shape[0] - 1 and cols == 0
+        self.is_corner.top_left = row == 0 and col == 0
+        self.is_corner.top_right = row == 0 and col == self.puzzle.shape[1] - 1
+        self.is_corner.bottom_right = row == self.puzzle.shape[0] - 1 and col == self.puzzle.shape[1] - 1
+        self.is_corner.bottom_left = row == self.puzzle.shape[0] - 1 and col == 0
+        self.is_corner.coordinates = (row, col)
 
         return self.is_corner.top_left or self.is_corner.top_right or self.is_corner.bottom_left or self.is_corner.bottom_right
 
@@ -62,23 +63,39 @@ class Board:
                     continue
 
                 new_puzzle[start], new_puzzle[end] = new_puzzle[end], new_puzzle[start]
-                regular_moves.append({'start': start, 'end': end, 'puzzle': new_puzzle, 'simple_cost': 1})
+                regular_moves.append({'start': start, 'end': end, 'baord': Board(new_puzzle, 1), 'simple_cost': 1})
 
             except IndexError:
                 continue
 
         return regular_moves
 
-    def wrap_around(self, direction: str):
-        pass
+    def wrap_around(self, wrapping_direction: str) -> dict:
 
+        new_puzzle = np.copy(self.puzzle)
+        start = self.is_corner.coordinates
+        rows = new_puzzle.shape[0]
+        cols = new_puzzle.shape[1]
 
-    def generate_wrapping_moves(self):
+        end_position = {
+            'left': (start[0], cols-1),
+            'right': (start[0], 0),
+            'up': (rows-1, start[1]),
+            'down': (0, start[1]),
+        }
+
+        end = end_position[wrapping_direction]
+        new_puzzle[start], new_puzzle[end] = new_puzzle[end], new_puzzle[start]
+
+        return {'start': start, 'end': end, 'board': Board(new_puzzle, 2), 'simple_cost': 2}
+
+    def _generate_wrapping_moves(self) -> dict:
         if not self.is_corner():
-            return None
+            return []
+
+        moves = []
 
         rows = self.puzzle.shape[0]
-        cols = self.puzzle.shape[1]
 
         can_be_performed = {
             'left': self.is_corner.top_left or self.is_corner.bottom_left,
@@ -89,4 +106,6 @@ class Board:
 
         for move in can_be_performed:
             if can_be_performed[move]:
-                self.wrap_around(move)
+                moves.append(self.wrap_around(move))
+
+        return moves

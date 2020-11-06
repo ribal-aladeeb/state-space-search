@@ -1,7 +1,3 @@
-<<<<<<< a4db79f2a82fd2a8b91dd94e9dd3ba2cb7474af1
-# state-space-search
-Implementing one or more state space search algorithms to sove a board puzzle game
-=======
 # X-Puzzle
 https://github.com/mohanadarafe/X-Puzzle
 
@@ -23,4 +19,3 @@ conda activate project1
 
 
 ### Credits
->>>>>>> Set up dev environment
