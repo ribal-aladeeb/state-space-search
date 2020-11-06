@@ -26,13 +26,13 @@ class Board:
         #corners = puzzle[::puzzle.shape[0]-1, ::puzzle.shape[1]-1]
         #corner_x, corner_y = np.where(corners == 0)[0][0]
 
-        self.is_corner.top_left = row == 0 and col == 0
-        self.is_corner.top_right = row == 0 and col == self.puzzle.shape[1] - 1
-        self.is_corner.bottom_right = row == self.puzzle.shape[0] - 1 and col == self.puzzle.shape[1] - 1
-        self.is_corner.bottom_left = row == self.puzzle.shape[0] - 1 and col == 0
-        self.is_corner.coordinates = (row, col)
+        self.top_left_corner = row == 0 and col == 0
+        self.top_right_corner = row == 0 and col == self.puzzle.shape[1] - 1
+        self.bottom_right_corner = row == self.puzzle.shape[0] - 1 and col == self.puzzle.shape[1] - 1
+        self.bottom_left_corner = row == self.puzzle.shape[0] - 1 and col == 0
+        self.coordinates = (row, col)
 
-        return self.is_corner.top_left or self.is_corner.top_right or self.is_corner.bottom_left or self.is_corner.bottom_right
+        return self.top_left_corner or self.top_right_corner or self.bottom_left_corner or self.bottom_right_corner
 
     def _generate_regular_moves(self) -> List[dict]:
         '''Make sure that this move is legal before performing it'''
@@ -73,7 +73,7 @@ class Board:
     def wrap_around(self, wrapping_direction: str) -> dict:
 
         new_puzzle = np.copy(self.puzzle)
-        start = self.is_corner.coordinates
+        start = self.coordinates
         rows = new_puzzle.shape[0]
         cols = new_puzzle.shape[1]
 
@@ -98,10 +98,10 @@ class Board:
         rows = self.puzzle.shape[0]
 
         can_be_performed = {
-            'left': self.is_corner.top_left or self.is_corner.bottom_left,
-            'right': self.is_corner.top_right or self.is_corner.bottom_right,
-            'up': (self.is_corner.top_left or self.is_corner.top_right) and 2 < rows,
-            'down': (self.is_corner.bottom_left or self.is_corner.bottom_right) and 2 < rows,
+            'left': self.top_left_corner or self.bottom_left_corner,
+            'right': self.top_right_corner or self.bottom_right_corner,
+            'up': (self.top_left_corner or self.top_right_corner) and 2 < rows,
+            'down': (self.bottom_left_corner or self.bottom_right_corner) and 2 < rows,
         }
 
         for move in can_be_performed:
