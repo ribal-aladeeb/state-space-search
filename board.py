@@ -1,6 +1,7 @@
 import numpy as np
 from typing import *
 
+
 class Board:
 
     def __init__(self, puzzle: np.array = None, score=0):
@@ -28,7 +29,7 @@ class Board:
 
         return self.top_left_corner or self.top_right_corner or self.bottom_left_corner or self.bottom_right_corner
 
-    def _generate_regular_moves(self) -> List[dict]:
+    def generate_regular_moves(self) -> List[dict]:
         '''
         Generates all the possible regular move (i.e. cost of one from the
         current state of the board.
@@ -63,7 +64,7 @@ class Board:
 
         return regular_moves
 
-    def wrap_around(self, wrapping_direction: str) -> dict:
+    def _wrap_around(self, wrapping_direction: str) -> dict:
 
         new_puzzle = np.copy(self.puzzle)
         start = self.coordinates
@@ -82,7 +83,7 @@ class Board:
 
         return {'start': start, 'end': end, 'board': Board(new_puzzle, 2), 'simple_cost': 2}
 
-    def _generate_wrapping_moves(self) -> dict:
+    def generate_wrapping_moves(self) -> List[dict]:
         if not self.is_corner():
             return []
 
@@ -99,6 +100,6 @@ class Board:
 
         for move in can_be_performed:
             if can_be_performed[move]:
-                moves.append(self.wrap_around(move))
+                moves.append(self._wrap_around(move))
 
         return moves

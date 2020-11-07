@@ -3,6 +3,7 @@ import numpy as np
 
 
 def test_is_goal_state():
+
     not_goal = Board(puzzle=np.arange(8).reshape(2, 4))
 
     assert not_goal.is_goal_state() == False
@@ -19,7 +20,40 @@ def test_is_goal_state():
     assert actual_goal_2.is_goal_state()
 
 
+def test_is_corner():
+
+    print()
+    print(35*"=")
+    print("Testing corners")
+    print(35*"=")
+
+    b = Board(puzzle=np.array([[0, 1, 3, 4], [5, 6, 7, 8]]))
+    print(f'\ntesting top-left corner puzzle\n{b.puzzle}')
+    assert b.is_corner() == True
+    assert b.top_left_corner ^ b.top_right_corner ^ b.bottom_left_corner ^ b.bottom_right_corner, '0 cannot be at multiple corners at the same time'
+
+    b = Board(puzzle=np.array([[2, 1, 3, 0], [5, 6, 7, 8]]))
+    print(f'\ntesting top-right corner puzzle\n{b.puzzle}')
+    assert b.is_corner() == True
+    assert b.top_left_corner ^ b.top_right_corner ^ b.bottom_left_corner ^ b.bottom_right_corner, '0 cannot be at multiple corners at the same time'
+
+    b = Board(puzzle=np.array([[2, 1, 3, 4], [0, 6, 7, 8]]))
+    print(f'\ntesting bottom-left corner puzzle\n{b.puzzle}')
+    assert b.is_corner() == True
+    assert b.top_left_corner ^ b.top_right_corner ^ b.bottom_left_corner ^ b.bottom_right_corner, '0 cannot be at multiple corners at the same time'
+
+    b = Board(puzzle=np.array([[2, 1, 3, 4], [5, 6, 7, 0]]))
+    print(f'\ntesting bottom-right corner puzzle\n{b.puzzle}')
+    assert b.is_corner() == True
+    assert b.top_left_corner ^ b.top_right_corner ^ b.bottom_left_corner ^ b.bottom_right_corner, '0 cannot be at multiple corners at the same time'
+
+    b = Board(puzzle=np.array([[2, 1, 3, 4], [5, 0, 7, 8]]))
+    print(f'\ntesting no corner puzzle\n{b.puzzle}')
+    assert b.is_corner() == False
+
+
 def test_generate_regular_moves():
+
     print()
     print(35*"=")
     print("Testing regular moves")
@@ -42,35 +76,128 @@ def test_generate_regular_moves():
         {"start": (0, 0), "end": (0, 1), "board": Board(right_puzzle), "simple_cost": 1}
     ]
 
-    actual_result = b._generate_regular_moves()
+    def move_sorter(dict_el): return dict_el['end']  # sort the results by the end position on the 0-tile. The order of moves doesn't matter.
 
-    index = 0
-    for results in actual_result:
-        assert (results["start"] == expected_result[index]["start"])
-        assert (results["end"] == expected_result[index]["end"])
-        assert (results["simple_cost"] == expected_result[index]["simple_cost"])
-        assert (np.array_equal(results["board"].puzzle, expected_result[index]["board"].puzzle))
-        index += 1
+    expected_result = sorted(expected_result, key=move_sorter)
 
-def test_move_row_out_of_bound_1():
+    actual_result = sorted(b.generate_regular_moves(), key=move_sorter)
+
+    assert len(actual_result) == len(expected_result), "Number of moves generated should be equal"
+
+    for i in range(len(actual_result)):
+        assert actual_result[i]["start"] == expected_result[i]["start"],                                "start position should be equal"
+        assert actual_result[i]["end"] == expected_result[i]["end"],                                    "end position should be equal"
+        assert actual_result[i]["simple_cost"] == expected_result[i]["simple_cost"],                    "simple_cost of the move should be 1"
+        assert np.array_equal(actual_result[i]["board"].puzzle, expected_result[i]["board"].puzzle),    "puzzle configuration is not correct"
+
+
+def test_generate_wrapping_moves():
+
+    delimiter = 35*"="
+    print(f'\n{delimiter}\nTesting wrapping moves 1\n{delimiter}\n')
+
+    boards_that_should_wrap = [
+        Board(puzzle=np.array([
+            [0, 1, 2, 3],
+            [4, 5, 6, 7]
+        ])), Board(puzzle=np.array([
+            [4, 1, 2, 3],
+            [7, 5, 6, 0]
+        ])), Board(puzzle=np.array([
+            [4, 1, 2, 3],
+            [7, 5, 6, 81],
+            [9, 8, 34, 0]
+        ]))
+    ]
+
+    expected_results = [
+        [
+            {'start': (0, 0), 'end': (0, 3), 'board': Board(puzzle=np.array([
+                [3, 1, 2, 0],
+                [4, 5, 6, 7]
+            ])), 'simple_cost': 2}
+        ],
+
+        [
+            {'start': (1, 3), 'end': (1, 0), 'board': Board(puzzle=np.array([
+                [4, 1, 2, 3],
+                [0, 5, 6, 7]
+            ])), 'simple_cost': 2}
+        ],
+
+        [
+            {'start': (2, 3), 'end': (2, 0), 'board': Board(puzzle=np.array([
+                [4, 1, 2, 3],
+                [7, 5, 6, 81],
+                [0, 8, 34, 9]
+            ])), 'simple_cost': 2},
+            {'start': (2, 3), 'end': (0, 3), 'board': Board(puzzle=np.array([
+                [4, 1, 2, 0],
+                [7, 5, 6, 81],
+                [9, 8, 34, 3]
+            ])), 'simple_cost': 2}
+        ]
+    ]
+    def move_sorter(dict_el): return dict_el['end']  # sort the results by the end position on the 0-tile. The order of moves doesn't matter.
+
+    for j in range(len(boards_that_should_wrap)):
+        board = boards_that_should_wrap[j]
+        expected_result = sorted(expected_results[j], key=move_sorter)
+        actual_result = sorted(board.generate_wrapping_moves(), key=move_sorter)
+
+        print(f'board that should wrap looks like:\n{board.puzzle}')
+        print(f'expected wrapping moves:\n{expected_result}')
+        print(f'actual wrapping moves generated:\n{actual_result}')
+
+        assert len(actual_result) == len(expected_result), "Number of moves generated should be equal"
+
+        for i in range(len(actual_result)):
+            assert actual_result[i]["start"] == expected_result[i]["start"],                                "start position should be equal"
+            assert actual_result[i]["end"] == expected_result[i]["end"],                                    "end position should be equal"
+            assert actual_result[i]["simple_cost"] == expected_result[i]["simple_cost"],                    "simple_cost of the move should be 1"
+            assert np.array_equal(actual_result[i]["board"].puzzle, expected_result[i]["board"].puzzle),    "puzzle configuration is not correct"
+
+    boards_that_should_not_wrap = [
+        Board(puzzle=np.array([
+            [1, 0, 2, 3],
+            [4, 5, 6, 7]
+        ])), Board(puzzle=np.array([
+            [1, 6, 2, 3],
+            [4, 5, 0, 7]
+        ])),         Board(puzzle=np.array([
+            [1, 9, 2, 3],
+            [4, 5, 6, 7],
+            [14, 15, 0, 17]
+        ])), Board(puzzle=np.array([
+            [1, 9, 2, 3],
+            [0, 5, 6, 7],
+            [4, 15, 14, 17]
+        ])),
+    ]
+
+    for board in boards_that_should_not_wrap:
+        assert len(board.generate_wrapping_moves()) == 0, "Should return an empty list"
+
+
+def test_move_row_out_of_bounds():  # numpy indices characterization test
     print()
     print(35*"=")
     print("Testing bad moves part 1")
     print(35*"=")
 
-    b = Board(puzzle=np.array([[1,2,3,4], [5, 0, 7, 8]]))
+    b = Board(puzzle=np.array([[1, 2, 3, 4], [5, 0, 7, 8]]))
     print(f'\ninitial puzzle\n{b.puzzle}')
     print()
-    
+
     bad_move = np.copy(b.puzzle)
     try:
         bad_move[(1, 1)], bad_move[(2, 1)] = bad_move[(2, 1)], bad_move[(1, 1)]
-    
+
     except IndexError:
         print("Assertion caught!")
         assert True
+    assert True, 'Assertion not caught'
 
-def test_move_row_out_of_bound_2():
     print()
     print(35*"=")
     print("Testing bad moves part 2")
@@ -79,38 +206,13 @@ def test_move_row_out_of_bound_2():
     b = Board(puzzle=np.array([[1, 0, 3, 4], [5, 6, 7, 8]]))
     print(f'\ninitial puzzle\n{b.puzzle}')
     print()
-    
+
     bad_move = np.copy(b.puzzle)
     try:
         bad_move[(0, 1)], bad_move[(-1, 1)] = bad_move[(-1, 1)], bad_move[(0, 1)]
-    
+
     except IndexError:
         print("Assertion caught!")
         assert True
 
-def test_is_corner():
-    print()
-    print(35*"=")
-    print("Testing corners")
-    print(35*"=")
-
-    b = Board(puzzle=np.array([[0, 1, 3, 4], [5, 6, 7, 8]]))
-    print(f'\ntesting top-left corner puzzle\n{b.puzzle}')
-    assert b.is_corner() == True
-
-    b = Board(puzzle=np.array([[2, 1, 3, 0], [5, 6, 7, 8]]))
-    print(f'\ntesting top-right corner puzzle\n{b.puzzle}')
-    assert b.is_corner() == True
-
-    b = Board(puzzle=np.array([[2, 1, 3, 4], [0, 6, 7, 8]]))
-    print(f'\ntesting bottom-left corner puzzle\n{b.puzzle}')
-    assert b.is_corner() == True
-
-    b = Board(puzzle=np.array([[2, 1, 3, 4], [5, 6, 7, 0]]))
-    print(f'\ntesting bottom-right corner puzzle\n{b.puzzle}')
-    assert b.is_corner() == True
-
-    b = Board(puzzle=np.array([[2, 1, 3, 4], [5, 0, 7, 8]]))
-    print(f'\ntesting no corner puzzle\n{b.puzzle}')
-    assert b.is_corner() == False
-    
+    assert True, 'Assertion not caught'
