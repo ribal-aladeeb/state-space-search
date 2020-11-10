@@ -54,9 +54,8 @@ def test_is_corner():
 
 def test_generate_regular_moves():
 
-    print()
     print(35*"=")
-    print("Testing regular moves")
+    print("Testing regular moves for a 2x4 puzzle")
     print(35*"=")
     b = Board(puzzle=np.arange(8).reshape(2, 4))
     print(f'initial puzzle\n{b.puzzle}')
@@ -89,6 +88,65 @@ def test_generate_regular_moves():
         assert actual_result[i]["end"] == expected_result[i]["end"],                                    "end position should be equal"
         assert actual_result[i]["simple_cost"] == expected_result[i]["simple_cost"],                    "simple_cost of the move should be 1"
         assert np.array_equal(actual_result[i]["board"].puzzle, expected_result[i]["board"].puzzle),    "puzzle configuration is not correct"
+
+    print('\n'+35*"=")
+    print("Testing regular moves for a 4x4 puzzle")
+    print(35*"="+'\n')
+
+    board = Board(puzzle=np.array([
+        [1, 2, 3, 4],
+        [5, 6, 0, 7],
+        [33, 44, 55, 66],
+        [11, 22, 77, 88],
+    ]))
+
+    expected_boards = [
+        Board(puzzle=np.array([  # up
+            [1, 2, 0, 4],
+            [5, 6, 3, 7],
+            [33, 44, 55, 66],
+            [11, 22, 77, 88],
+        ])),
+        Board(puzzle=np.array([  # left
+            [1, 2, 3, 4],
+            [5, 0, 6, 7],
+            [33, 44, 55, 66],
+            [11, 22, 77, 88],
+        ])),
+        Board(puzzle=np.array([  # right
+            [1, 2, 3, 4],
+            [5, 6, 7, 0],
+            [33, 44, 55, 66],
+            [11, 22, 77, 88],
+        ])),
+        Board(puzzle=np.array([  # down
+            [1, 2, 3, 4],
+            [5, 6, 55, 7],
+            [33, 44, 0, 66],
+            [11, 22, 77, 88],
+        ]))
+    ]
+
+    expected_results = [
+        {"start": (1, 2), "end": (0, 2), "board": expected_boards[0], "simple_cost": 1},
+        {"start": (1, 2), "end": (1, 1), "board": expected_boards[1], "simple_cost": 1},
+        {"start": (1, 2), "end": (1, 3), "board": expected_boards[2], "simple_cost": 1},
+        {"start": (1, 2), "end": (2, 2), "board": expected_boards[3], "simple_cost": 1},
+    ]
+
+    actual_results = sorted(board.generate_regular_moves(), key=move_sorter)
+    expected_results = sorted(expected_results, key=move_sorter)
+    assert len(actual_results) == len(expected_results), 'length should be the same'
+
+    for i in range(len(actual_results)):
+        print('expected:')
+        print(expected_results[i])
+        print('actual:')
+        print(actual_results[i])
+        assert actual_results[i]["start"] == expected_results[i]["start"],                                "start position should be equal"
+        assert actual_results[i]["end"] == expected_results[i]["end"],                                    "end position should be equal"
+        assert actual_results[i]["simple_cost"] == expected_results[i]["simple_cost"],                    "simple_cost of the move should be 1"
+        assert np.array_equal(actual_results[i]["board"].puzzle, expected_results[i]["board"].puzzle),    "puzzle configuration is not correct"
 
 
 def test_generate_wrapping_moves():
