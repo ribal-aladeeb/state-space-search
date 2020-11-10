@@ -68,13 +68,13 @@ class Board:
 
         new_puzzle = np.copy(self.puzzle)
         start = self.coordinates
-        rows = new_puzzle.shape[0]
-        cols = new_puzzle.shape[1]
+        rows = new_puzzle.shape[0] - 1
+        cols = new_puzzle.shape[1] - 1
 
         end_position = {
-            'left': (start[0], cols-1),
+            'left': (start[0], cols),
             'right': (start[0], 0),
-            'up': (rows-1, start[1]),
+            'up': (rows, start[1]),
             'down': (0, start[1]),
         }
 
@@ -84,6 +84,7 @@ class Board:
         return {'start': start, 'end': end, 'board': Board(new_puzzle, 2), 'simple_cost': 2}
 
     def generate_wrapping_moves(self) -> List[dict]:
+
         if not self.is_corner():
             return []
 
@@ -101,5 +102,52 @@ class Board:
         for move in can_be_performed:
             if can_be_performed[move]:
                 moves.append(self._wrap_around(move))
+
+        return moves
+
+    def _move_diagonal(self, wrapping_direction: str) -> dict:
+
+        new_puzzle0 = np.copy(self.puzzle)
+        new_puzzle1 = np.copy(self.puzzle)
+        start = self.coordinates
+        rows = new_puzzle1.shape[0] - 1
+        cols = new_puzzle1.shape[1] - 1
+
+        direction_to_endposition_mapping = {
+            'bottom-right': [(1, 1), (rows, cols)],
+            'bottom-left': [(1, cols-1), (rows, 0)],
+            'top-left': [(0, 0), (rows-1, cols-1)],
+            'top-right': [(rows-1, 1), (0, cols)],
+        }
+
+        end = direction_to_endposition_mapping[wrapping_direction]
+
+        new_puzzle0[start], new_puzzle0[end[0]] = new_puzzle0[end[0]], new_puzzle0[start]
+        new_puzzle1[start], new_puzzle1[end[1]] = new_puzzle1[end[1]], new_puzzle1[start]
+
+        return [
+            {'start': start, 'end': end[0], 'board': Board(new_puzzle0, 3), 'simple_cost': 3},
+            {'start': start, 'end': end[1], 'board': Board(new_puzzle1, 3), 'simple_cost': 3}
+        ]
+
+    def generate_diagonal_moves(self) -> List[dict]:
+
+        if not self.is_corner():
+            return []
+
+        moves = []
+
+        can_be_performed = {
+            'bottom-right': self.top_left_corner,
+            'bottom-left': self.top_right_corner,
+            'top-right': self.bottom_left_corner,
+            'top-left': self.bottom_right_corner,
+        }
+
+        for direction in can_be_performed:
+            if can_be_performed[direction]:
+                move1, move2 = self._move_diagonal(direction)
+                moves.append(move1)
+                moves.append(move2)
 
         return moves

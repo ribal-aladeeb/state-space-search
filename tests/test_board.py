@@ -237,6 +237,101 @@ def test_generate_wrapping_moves():
         assert len(board.generate_wrapping_moves()) == 0, "Should return an empty list"
 
 
+def test_generate_diagonal_moves():
+    delimiter = 35*"="
+    print(f'\n{delimiter}\nTesting diagnonal moves 1\n{delimiter}\n')
+
+    boards_that_should_have_diag = [
+        Board(puzzle=np.array([
+            [0, 1, 2, 3],
+            [4, 5, 6, 7]
+        ])), Board(puzzle=np.array([
+            [4, 1, 2, 3],
+            [7, 5, 6, 0]
+        ])), Board(puzzle=np.array([
+            [4, 1, 2, 3],
+            [7, 5, 6, 81],
+            [9, 8, 34, 0]
+        ]))
+    ]
+
+    expected_results = [
+        [
+            {'start': (0, 0), 'end': (1, 1), 'board': Board(puzzle=np.array([
+                [5, 1, 2, 3],
+                [4, 0, 6, 7]
+            ])), 'simple_cost': 3},
+            {'start': (0, 0), 'end': (1, 3), 'board': Board(puzzle=np.array([
+                [7, 1, 2, 3],
+                [4, 5, 6, 0]
+            ])), 'simple_cost': 3}
+        ],
+        [
+            {'start': (1, 3), 'end': (0, 0), 'board': Board(puzzle=np.array([
+                [0, 1, 2, 3],
+                [7, 5, 6, 4]
+            ])), 'simple_cost': 3},
+            {'start': (1, 3), 'end': (0, 2), 'board': Board(puzzle=np.array([
+                [4, 1, 0, 3],
+                [7, 5, 6, 2]
+            ])), 'simple_cost': 3},
+        ],
+        [
+            {'start': (2, 3), 'end': (0, 0), 'board': Board(puzzle=np.array([
+                [0, 1, 2, 3],
+                [7, 5, 6, 81],
+                [9, 8, 34, 4]
+            ])), 'simple_cost': 3},
+            {'start': (2, 3), 'end': (1, 2), 'board': Board(puzzle=np.array([
+                [4, 1, 2, 3],
+                [7, 5, 0, 81],
+                [9, 8, 34, 6]
+            ])), 'simple_cost': 3},
+        ]
+    ]
+
+    def move_sorter(dict_el): return dict_el['end']  # sort the results by the end position on the 0-tile. The order of moves doesn't matter.
+
+    for j in range(len(boards_that_should_have_diag)):
+        board = boards_that_should_have_diag[j]
+        expected_result = sorted(expected_results[j], key=move_sorter)
+        actual_result = sorted(board.generate_diagonal_moves(), key=move_sorter)
+        assert len(actual_result) == 2  # if you are at a corner, you can always perform exactly two moves
+
+        print(f'board that should have a diagonal looks like:\n{board.puzzle}')
+        print(f'expected diagonal moves:\n{expected_result}')
+        print(f'actual diagonal moves generated:\n{actual_result}')
+
+        assert len(actual_result) == len(expected_result), "Number of moves generated should be equal"
+
+        for i in range(len(actual_result)):
+            assert actual_result[i]["start"] == expected_result[i]["start"],                                "start position should be equal"
+            assert actual_result[i]["end"] == expected_result[i]["end"],                                    "end position should be equal"
+            assert actual_result[i]["simple_cost"] == expected_result[i]["simple_cost"],                    "simple_cost of the move should be 1"
+            assert np.array_equal(actual_result[i]["board"].puzzle, expected_result[i]["board"].puzzle),    "puzzle configuration is not correct"
+
+    boards_that_dont_have_diagonal_moves = [
+        Board(puzzle=np.array([
+            [1, 0, 2, 3],
+            [4, 5, 6, 7]
+        ])), Board(puzzle=np.array([
+            [1, 6, 2, 3],
+            [4, 5, 0, 7]
+        ])),         Board(puzzle=np.array([
+            [1, 9, 2, 3],
+            [4, 5, 6, 7],
+            [14, 15, 0, 17]
+        ])), Board(puzzle=np.array([
+            [1, 9, 2, 3],
+            [0, 5, 6, 7],
+            [4, 15, 14, 17]
+        ])),
+    ]
+
+    for board in boards_that_dont_have_diagonal_moves:
+        assert len(board.generate_diagonal_moves()) == 0
+
+
 def test_move_row_out_of_bounds():  # numpy indices characterization test
     print()
     print(35*"=")
