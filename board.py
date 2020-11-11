@@ -4,9 +4,11 @@ from typing import *
 
 class Board:
 
-    def __init__(self, puzzle: np.array = None, score=0):
+    def __init__(self, puzzle: np.array = None,):
         self.puzzle = puzzle
-        self.score = score
+
+    def __repr__(self) -> str:
+        return str(self.puzzle)
 
     def is_goal_state(self) -> bool:
         x = self.puzzle
@@ -57,7 +59,7 @@ class Board:
                     continue
 
                 new_puzzle[start], new_puzzle[end] = new_puzzle[end], new_puzzle[start]
-                regular_moves.append({'start': start, 'end': end, 'board': Board(new_puzzle, 1), 'simple_cost': 1})
+                regular_moves.append({'start': start, 'end': end, 'board': Board(new_puzzle), 'simple_cost': 1})
 
             except IndexError:  # performing this move is not possible because the index goes out of bounds (it is not a possible child state) so skip it.
                 continue
@@ -81,7 +83,7 @@ class Board:
         end = end_position[wrapping_direction]
         new_puzzle[start], new_puzzle[end] = new_puzzle[end], new_puzzle[start]
 
-        return {'start': start, 'end': end, 'board': Board(new_puzzle, 2), 'simple_cost': 2}
+        return {'start': start, 'end': end, 'board': Board(new_puzzle), 'simple_cost': 2}
 
     def generate_wrapping_moves(self) -> List[dict]:
 
@@ -126,8 +128,8 @@ class Board:
         new_puzzle1[start], new_puzzle1[end[1]] = new_puzzle1[end[1]], new_puzzle1[start]
 
         return [
-            {'start': start, 'end': end[0], 'board': Board(new_puzzle0, 3), 'simple_cost': 3},
-            {'start': start, 'end': end[1], 'board': Board(new_puzzle1, 3), 'simple_cost': 3}
+            {'start': start, 'end': end[0], 'board': Board(new_puzzle0), 'simple_cost': 3},
+            {'start': start, 'end': end[1], 'board': Board(new_puzzle1), 'simple_cost': 3}
         ]
 
     def generate_diagonal_moves(self) -> List[dict]:
@@ -151,3 +153,7 @@ class Board:
                 moves.append(move2)
 
         return moves
+
+    def generate_all_moves(self) -> List[dict]:
+        all_moves = self.generate_regular_moves() + self.generate_wrapping_moves() + self.generate_diagonal_moves()
+        return all_moves
