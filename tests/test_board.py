@@ -1,7 +1,6 @@
 from board import Board
 import numpy as np
 
-
 def test_is_goal_state():
 
     not_goal = Board(puzzle=np.arange(8).reshape(2, 4))
@@ -19,6 +18,24 @@ def test_is_goal_state():
     assert actual_goal_1.is_goal_state()
     assert actual_goal_2.is_goal_state()
 
+def test_generate_goal_states():
+    test_cases = [
+        Board(puzzle=np.array([[0, 1, 3, 4], [5, 6, 7, 8]])),
+        Board(puzzle=np.array([
+            [7, 1, 4],
+            [5, 6, 0],
+            [2, 3, 8]]))
+    ]
+
+    expected_results = [
+        (np.array([1, 2, 3, 4, 5, 6, 7, 0]), np.array([1, 3, 5, 7, 2, 4, 6, 0])),
+        (np.array([1, 2, 3, 4, 5, 6, 7, 8, 0]), np.array([1, 4, 7, 2, 5, 8, 3, 6, 0]))
+    ]
+
+    index = 0
+    for boards in test_cases:
+        assert np.array_equal(boards.generate_goal_states(), expected_results[index])
+        index += 1
 
 def test_is_corner():
 
