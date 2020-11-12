@@ -18,6 +18,14 @@ class Board:
 
         return np.array_equal(x.flatten(), goal_state) or np.array_equal(x.T.flatten(), goal_state)
 
+    def generate_goal_states(self) -> tuple:
+        x = self.puzzle
+        rows = x.shape[0]
+        cols = x.shape[1]
+        goal_state1 = np.concatenate((np.arange(1, rows*cols), np.array([0])))
+        goal_state2 = goal_state1.reshape(cols,rows).T.flatten()
+        return goal_state1, goal_state2
+
     def is_corner(self) -> bool:
         position = np.where(self.puzzle == 0)
         row = position[0][0]

@@ -12,7 +12,8 @@ class Node:
                  parent: Node = None,
                  simple_cost: int = 0,
                  is_root: bool = False,
-                 board: Board = None):
+                 board: Board = None,
+                 heuristic_func=None):
 
         if is_root:
             assert board != None, "There should be a board argument if is_root=True"
@@ -30,12 +31,17 @@ class Node:
 
         self.parent: Board = parent
 
-    def successors(self) -> List[Node]:
+        if heuristic_func:
+            self.h_n = heuristic_func(self)
+            self.g_n = self.total_cost
+            self.f_n = self.g_n + self.h_n
+
+    def successors(self, heuristic_func=None) -> List[Node]:
         moves: List[dict] = self.board.generate_all_moves()
         successors: List[Node] = []
 
         for move in moves:
-            child = Node(move=move, parent=self, simple_cost=move['simple_cost'])
+            child = Node(move=move, parent=self, simple_cost=move['simple_cost'], heuristic_func=heuristic_func)
             successors.append(child)
 
         return successors
@@ -52,31 +58,98 @@ def uniform_cost(board: Board) -> Node:
 
     total_visited = 1
     open_list.put((root.total_cost, total_visited, root))
+    current_node = None
 
     while not open_list.empty():
         total_visited += 1
         _, _, current_node = open_list.get()
 
         if current_node.is_goal_state():
+            print(f'Visited {total_visited} nodes')
             return current_node
 
-        hashed = hash(tuple(current_node.board.puzzle.flatten()))
+        node = tuple(current_node.board.puzzle.flatten())
 
-        if hashed in closed_list:  # This board configuration has been seen before
-            if closed_list[hashed].total_cost < current_node.total_cost:
+        if node in closed_list:  # This board configuration has been seen before
+            if closed_list[node].total_cost < current_node.total_cost:
                 continue  # we previously got to this configuration with lower cost than we do right now so ignore
 
-        closed_list[hashed] = current_node
+        closed_list[node] = current_node
         for s in current_node.successors():
             total_visited += 1
             open_list.put((s.total_cost, total_visited, s))
 
-        if total_visited % 1000 == 0:
-            print(f'Visited {total_visited} nodes', end='\r')
+        # if total_visited % 1000 == 0:
+            # print(f'Visited {total_visited} nodes', end='\r')
+
+    print("This puzzle configuration has no result")
+    return current_node
+
+
+def greedy_best_first(board: Board, H) -> Node:
+    root = Node(is_root=True, board=board, heuristic_func=H)
+    # goal_states = root.board.generate_goal_states()
+
+    open_list = PriorityQueue()       # even though not python list, naming is keep for consistency with state space search theory
+    closed_list = set()                # even though not python list, naming is keep for consistency with state space search theory
+
+    total_visited = 1
+    open_list.put((root.h_n, total_visited, root))
+    current_node = None
+
+    while not open_list.empty():
+        total_visited += 1
+        _, _, current_node = open_list.get()
+
+        if current_node.is_goal_state():
+            print(f'Visited {total_visited} nodes')
+            return current_node
+
+        node = tuple(current_node.board.puzzle.flatten())
+
+        if node in closed_list:
+            continue
+
+        closed_list.add(node)
+        for s in current_node.successors(heuristic_func=H):
+            total_visited += 1
+            open_list.put((s.h_n, total_visited, s))
+
+    print("This puzzle configuration has no result")
+    return current_node
+
+
+def heuristic1(n: Node) -> int:
+    '''This heuristic will return the number of tiles out of place'''
+    goal_states = n.board.generate_goal_states()
+    tiles_out_of_place = []
+    for state in goal_states:
+        config = n.board.puzzle.flatten()
+        x = np.where(config != state)[0]
+        num_tiles = len(x)
+        tiles_out_of_place.append(num_tiles)
+
+    return min(tiles_out_of_place)
 
 
 if __name__ == "__main__":
-    start_puzzle: Board = Board(puzzle=np.array(np.arange(8).reshape(2, 4)))
-    print(f'start puzzle:\n{start_puzzle}')
-    result: Node = uniform_cost(start_puzzle)
-    print(f'resulting puzzle with cost {result.total_cost}:\n{result.board}')
+
+    puzzles = [
+        np.array([
+            [7, 0, 1, 6],
+            [2, 5, 3, 4]
+        ]),
+        np.array([
+            [0, 1, 2, 3],
+            [4, 5, 6, 7]
+        ])
+    ]
+    for p in puzzles:
+        start_puzzle: Board = Board(puzzle=p)
+        print(f'start puzzle:\n{start_puzzle}')
+        result: Node = greedy_best_first(start_puzzle, H=heuristic1)
+        result2: Node = uniform_cost(start_puzzle)
+        print(f'GREEDY cost {result.total_cost}:\n{result.board}')
+        print()
+        print(f'UFC cost {result2.total_cost}:\n{result2.board}')
+        print()
