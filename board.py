@@ -165,3 +165,10 @@ class Board:
     def generate_all_moves(self) -> List[dict]:
         all_moves = self.generate_regular_moves() + self.generate_wrapping_moves() + self.generate_diagonal_moves()
         return all_moves
+
+
+    def line_representation(self)->str:
+        '''return a single line with all board values counted in row-major order'''
+
+        tiles = [str(i) for i in self.puzzle.flatten()]
+        return ' '.join(tiles)

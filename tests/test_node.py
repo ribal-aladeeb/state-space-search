@@ -36,7 +36,7 @@ def test_successors():
         assert moves.total_cost == expected_results[index]["total_cost"], "The costs are not matching!"
         assert np.array_equal(moves.board.puzzle, expected_results[index]["board"].puzzle)
         index += 1
-    
+
     print()
     print(35*"=")
     print("Testing children moves")
@@ -68,4 +68,3 @@ def test_successors():
         assert moves.total_cost == expected_child_results[index]["total_cost"], "The costs are not matching!"
         assert np.array_equal(moves.board.puzzle, expected_child_results[index]["board"].puzzle)
         index += 1
-    
