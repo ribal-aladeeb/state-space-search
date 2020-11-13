@@ -1,81 +1,8 @@
-from __future__ import annotations  # in order to allow type hints for a class referring to itself
-from typing import List, Tuple
-from board import Board
-from queue import PriorityQueue
 import numpy as np
-
-
-class Node:
-
-    def __init__(self,
-                 move: dict = None,
-                 parent: Node = None,
-                 simple_cost: int = 0,
-                 is_root: bool = False,
-                 board: Board = None,
-                 heuristic_func=None):
-
-        if is_root:
-            assert board != None, "There should be a board argument if is_root=True"
-            self.board = board
-            self.start = (np.nan, np.nan)
-            self.end = (np.nan, np.nan)
-            self.simple_cost = 0
-            self.total_cost = 0
-        else:
-            assert move != None, "A hashed_node should always be created with a move argument when not root"
-            assert parent != None, "If a hashed_node is not root, parent cannot be None"
-            self.start: tuple = move['start']
-            self.end: tuple = move['end']
-            self.board: Board = move['board']
-            self.simple_cost = move['simple_cost']
-            self.total_cost = self.simple_cost + parent.total_cost
-
-        self.parent: Board = parent
-
-        if heuristic_func:
-            self.h_n = heuristic_func(self)
-            self.g_n = self.total_cost
-            self.f_n = self.g_n + self.h_n
-
-    def successors(self, heuristic_func=None) -> List[Node]:
-        moves: List[dict] = self.board.generate_all_moves()
-        successors: List[Node] = []
-
-        for move in moves:
-            child = Node(move=move, parent=self, heuristic_func=heuristic_func)
-            successors.append(child)
-
-        return successors
-
-    def is_goal_state(self) -> bool:
-        return self.board.is_goal_state()
-
-    def generate_solution_and_search_string(self, algo: str) -> Tuple[str, str]:
-        '''
-        This function returns the strings needed to create the solution.txt and
-        search.txt files. The algo parameter takes one of ['uc' , 'gbf', 'a*'].
-        '''
-        solution = ''
-        search = ''
-
-        current_node = self
-
-        while current_node.parent != None:
-            moved_tile_index = current_node.end
-            moved_tile_value = current_node.board.puzzle[moved_tile_index]
-
-            board_as_string = current_node.board.line_representation()
-
-            solution = f'{moved_tile_value} {current_node.simple_cost} {board_as_string}\n' + solution
-
-            f = current_node.f_n if algo.lower() == 'a*' else 0
-            g = 0 if algo.lower() == 'gbf' else current_node.g_n
-            h = 0 if algo.lower() == 'uc' else current_node.h_n
-
-            search = f'{f} {g} {h} {board_as_string}\n' + search
-
-        return solution, search
+from board import Board
+from node import Node
+from queue import PriorityQueue
+import os
 
 
 def uniform_cost(board: Board) -> Node:
@@ -191,6 +118,33 @@ def heuristic1(n: Node) -> int:
     return min(tiles_out_of_place)
 
 
+def write_results_to_disk(solution: str, search: str, algo_name: str, puzzle_number: int, heuristic: str = None) -> bool:
+    '''
+    Writes the contents of the solution and search strings for puzzle_number using algo_name and heurisic
+    '''
+    algo_name = algo_name.lower()
+    heuristic_string = f'_{heuristic}_' if heuristic != None else ''
+    sol_name = f'{puzzle_number}_{algo_name}{heuristic_string}solution.txt'
+    search_name = f'{puzzle_number}_{algo_name}{heuristic_string}search.txt'
+
+    result_dir = 'results'
+
+    if not os.path.isdir(result_dir):
+        os.makedirs(result_dir)
+    else:
+        os.replace(result_dir, result_dir)
+        # os.rmdir(result_dir)
+        # os.makedirs(result_dir)
+
+    with open(os.path.join(result_dir,sol_name), mode='w') as f:
+        f.write(solution)
+
+    with open(os.path.join(result_dir, search_name), mode='w') as f:
+        f.write(search)
+
+    return True
+
+
 if __name__ == "__main__":
 
     puzzles = [
@@ -198,18 +152,20 @@ if __name__ == "__main__":
             [7, 0, 1, 6],
             [2, 5, 3, 4]
         ]),
-        np.array([
-            [0, 1, 2, 3],
-            [4, 5, 6, 7]
-        ])
+        # np.array([
+        #     [0, 1, 2, 3],
+        #     [4, 5, 6, 7]
+        # ])
     ]
     for p in puzzles:
         start_puzzle: Board = Board(puzzle=p)
         print(f'start puzzle:\n{start_puzzle}')
         experiments = {
-            "uniform":   uniform_cost(start_puzzle),
-            "greedy bfs": greedy_best_first(start_puzzle, H=heuristic1),
+            "uc":   uniform_cost(start_puzzle),
+            "gbf": greedy_best_first(start_puzzle, H=heuristic1),
             "A*": a_star(start_puzzle, H=heuristic1)
         }
         for algo, result in experiments.items():
             print(f'{algo} found with cost = {result.total_cost}:\n{result.board}\n')
+            solution_str, search_str = result.generate_solution_and_search_string(algo)
+            write_results_to_disk(solution_str,search_str,algo,0,'h1')
