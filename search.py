@@ -193,7 +193,7 @@ def heuristic3(n: Node) -> float:
     for i in range(len(goal_states)):
         state = goal_states[i].reshape(rows, cols)
         puzzle = n.board.puzzle
-        total_euclidean[i] = np.linalg.norm(puzzle - state[i])
+        total_euclidean[i] = np.linalg.norm(puzzle - state)
     
     return float(min(total_euclidean))
 
@@ -253,8 +253,8 @@ if __name__ == "__main__":
         print(f'start puzzle:\n{start_puzzle}')
         experiments = {
             "uc":   uniform_cost(start_puzzle),
-            "gbf": greedy_best_first(start_puzzle, H=heuristic4),
-            "A*": a_star(start_puzzle, H=heuristic4)
+            "gbf": greedy_best_first(start_puzzle, H=heuristic3),
+            "A*": a_star(start_puzzle, H=heuristic3)
         }
         for algo, result in experiments.items():
             print(f'{algo} found with cost = {result.total_cost}:\n{result.board}\n')
