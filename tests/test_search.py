@@ -59,9 +59,9 @@ def test_3x3_ufc_board():
 
 def test_heuristic2():
     b = Board(puzzle=np.array([
-        [0, 1, 2, 3],
-        [4, 5, 6, 7]
+        [0, 5, 6, 7],
+        [1, 2, 3, 4] 
     ]))
 
     node = Node(is_root=True, board=b, heuristic_func=heuristic2)
-    print(heuristic2(node))
+    assert heuristic2(node) == 9, "The heuristic is wrongly calculated!"

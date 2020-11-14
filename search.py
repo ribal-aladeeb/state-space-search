@@ -167,12 +167,14 @@ def heuristic2(n: Node) -> int:
         puzzle = n.board.puzzle
         state = goal_states[i].reshape(rows, cols)
 
-        for j in range(rows-1):
+        # out of place rows
+        for j in range(rows):
             current_row = set(puzzle[j])
             goal_row = set(state[j])
             out_of_row_place[i] += sum([c not in goal_row for c in current_row])
 
-        for k in range(cols-1):
+        # out of place columns
+        for k in range(cols):
             current_col = set(puzzle[:, k])
             goal_col = set(state[:, k])
             out_of_column_place[k] += sum([c not in goal_col for c in current_col])
@@ -181,6 +183,19 @@ def heuristic2(n: Node) -> int:
 
     return int(min(total_out_of_place))
 
+def heuristic3(n: Node) -> float:
+    '''This heuristic computes the Euclidean distance of the tiles'''
+    goal_states = n.board.generate_goal_states()
+    rows, cols = n.board.puzzle.shape
+
+    total_out_of_place = [0, 0]  # always exactly 2
+
+    for i in range(len(goal_states)):
+        state = goal_states[i].reshape(rows, cols)
+        puzzle = n.board.puzzle
+        total_out_of_place[i] = np.linalg.norm(puzzle - state[i])
+    
+    return float(min(total_out_of_place))
 
 def write_results_to_disk(solution: str, search: str, algo_name: str, puzzle_number: int, heuristic: str = None) -> bool:
     '''
@@ -226,8 +241,8 @@ if __name__ == "__main__":
         print(f'start puzzle:\n{start_puzzle}')
         experiments = {
             "uc":   uniform_cost(start_puzzle),
-            "gbf": greedy_best_first(start_puzzle, H=heuristic2),
-            "A*": a_star(start_puzzle, H=heuristic2)
+            "gbf": greedy_best_first(start_puzzle, H=heuristic3),
+            "A*": a_star(start_puzzle, H=heuristic3)
         }
         for algo, result in experiments.items():
             print(f'{algo} found with cost = {result.total_cost}:\n{result.board}\n')
