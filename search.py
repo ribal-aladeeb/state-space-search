@@ -134,7 +134,7 @@ def a_star(board: Board, H, timeout=60) -> Node:
         closed_list[hashed_node] = current_node
         for s in current_node.successors(heuristic_func=H):
             created_nodes += 1
-            open_list.put((s.total_cost, created_nodes, s))
+            open_list.put((s.f_n, created_nodes, s))
 
     print("This puzzle configuration has no result")
     return current_node
@@ -194,7 +194,7 @@ def heuristic3(n: Node) -> float:
         state = goal_states[i].reshape(rows, cols)
         puzzle = n.board.puzzle
         total_euclidean[i] = np.linalg.norm(puzzle - state)
-    
+
     return float(min(total_euclidean))
 
 def heuristic4(n: Node) -> int:
