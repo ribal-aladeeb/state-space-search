@@ -4,6 +4,7 @@ import search
 from os import path
 import numpy as np
 from board import Board
+import heuristics
 
 
 def init_params():
@@ -36,7 +37,7 @@ def convert_to_numpy_arrays(file_name):
     return np_puzzle
 
 
-if __name__ == "__main__":
+def main():
     args = init_params()
     filename = args.input_file.name
     puzzles = convert_to_numpy_arrays(filename)
@@ -46,10 +47,14 @@ if __name__ == "__main__":
         print(f'start puzzle:\n{start_puzzle}')
         experiments = {
             "uc":   search.uniform_cost(start_puzzle),
-            "gbf": search.greedy_best_first(start_puzzle, H=search.heuristic1),
-            "A*": search.a_star(start_puzzle, H=search.heuristic1)
+            "gbf": search.greedy_best_first(start_puzzle, H=heuristics.hamming_distance),
+            "A*": search.a_star(start_puzzle, H=heuristics.hamming_distance)
         }
         for algo, result in experiments.items():
             print(f'{algo} found with cost = {result.total_cost}:\n{result.board}\n')
             solution_str, search_str = result.generate_solution_and_search_string(algo)
             search.write_results_to_disk(solution_str, search_str, algo, 0, 'h1')
+
+
+if __name__ == "__main__":
+    main()

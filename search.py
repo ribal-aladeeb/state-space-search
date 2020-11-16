@@ -4,6 +4,7 @@ from node import Node
 from queue import PriorityQueue
 import os
 import time
+import heuristics
 
 
 def uniform_cost(board: Board, timeout=60) -> Node:
@@ -140,78 +141,6 @@ def a_star(board: Board, H, timeout=60) -> Node:
     return current_node
 
 
-def heuristic1(n: Node) -> int:
-    '''This heuristic will return the number of tiles out of place'''
-    goal_states = n.board.generate_goal_states()
-    tiles_out_of_place = []
-    for state in goal_states:
-        config = n.board.puzzle.flatten()
-        x = np.where(config != state)[0]
-        num_tiles = len(x)
-        tiles_out_of_place.append(num_tiles)
-
-    return min(tiles_out_of_place)
-
-
-def heuristic2(n: Node) -> int:
-    '''This heuristic computes the number of tiles out of row place and column place.'''
-    goal_states = n.board.generate_goal_states()
-    rows, cols = n.board.puzzle.shape
-
-    total_out_of_place = [0, 0]  # always exactly 2
-
-    for i in range(len(goal_states)):
-        out_of_row_place = np.zeros(rows)
-        out_of_column_place = np.zeros(cols)
-
-        puzzle = n.board.puzzle
-        state = goal_states[i].reshape(rows, cols)
-
-        # out of place rows
-        for j in range(rows):
-            current_row = set(puzzle[j])
-            goal_row = set(state[j])
-            out_of_row_place[i] += sum([c not in goal_row for c in current_row])
-
-        # out of place columns
-        for k in range(cols):
-            current_col = set(puzzle[:, k])
-            goal_col = set(state[:, k])
-            out_of_column_place[k] += sum([c not in goal_col for c in current_col])
-
-        total_out_of_place[i] = sum(out_of_row_place) + sum(out_of_column_place)
-
-    return int(min(total_out_of_place))
-
-
-def heuristic3(n: Node) -> int:
-    '''This heuristic computes the Euclidean distance of the tiles'''
-    goal_states = n.board.generate_goal_states()
-    rows, cols = n.board.puzzle.shape
-
-    total_euclidean = [0, 0]  # always exactly 2
-
-    for i in range(len(goal_states)):
-        state = goal_states[i].reshape(rows, cols)
-        puzzle = n.board.puzzle
-        total_euclidean[i] = np.linalg.norm(puzzle - state)
-
-    return int(min(total_euclidean))
-
-
-def heuristic4(n: Node) -> int:
-    '''This heuristic computes the permutation inversion of the tiles'''
-    goal_states = n.board.generate_goal_states()
-
-    total = [0, 0]  # always exactly 2
-
-    for i in range(len(goal_states)):
-        for j in range(len(n.board.puzzle.flatten())):
-            total[i] += abs(j - np.where(goal_states[i] == n.board.puzzle.flatten()[j])[0][0])
-
-    return int(min(total))
-
-
 def write_results_to_disk(solution: str, search: str, algo_name: str, puzzle_number: int, heuristic: str = None) -> bool:
     '''
     Writes the contents of the solution and search strings for puzzle_number using algo_name and heurisic
@@ -227,8 +156,6 @@ def write_results_to_disk(solution: str, search: str, algo_name: str, puzzle_num
         os.makedirs(result_dir)
     else:
         os.replace(result_dir, result_dir)
-        # os.rmdir(result_dir)
-        # os.makedirs(result_dir)
 
     with open(os.path.join(result_dir, sol_name), mode='w') as f:
         f.write(solution)
@@ -239,8 +166,7 @@ def write_results_to_disk(solution: str, search: str, algo_name: str, puzzle_num
     return True
 
 
-if __name__ == "__main__":
-
+def main():
     puzzles = [
         np.array([
             [7, 0, 1, 6],
@@ -256,10 +182,14 @@ if __name__ == "__main__":
         print(f'start puzzle:\n{start_puzzle}')
         experiments = {
             "uc":   uniform_cost(start_puzzle),
-            "gbf": greedy_best_first(start_puzzle, H=heuristic1),
-            "A*": a_star(start_puzzle, H=heuristic1)
+            "gbf": greedy_best_first(start_puzzle, H=heuristics.hamming_distance),
+            "A*": a_star(start_puzzle, H=heuristics.hamming_distance)
         }
         for algo, result in experiments.items():
             print(f'{algo} found with cost = {result.total_cost}:\n{result.board}\n')
             solution_str, search_str = result.generate_solution_and_search_string(algo)
             write_results_to_disk(solution_str, search_str, algo, 0, 'h1')
+
+
+if __name__ == "__main__":
+    main()
