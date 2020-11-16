@@ -26,7 +26,7 @@ def uniform_cost(board: Board, timeout=60) -> Node:
 
         if current_node.is_goal_state():
             elapsed = round(time.time() - start_time, 2)
-            print(f'{visited_nodes} visited and {created_nodes} created nodes in {elapsed} seconds')
+            print(f'Uniform Cost: {visited_nodes} visited and {created_nodes} created nodes in {elapsed} seconds')
             return current_node
 
         #--------This is only related to time execution--------#
@@ -71,7 +71,7 @@ def greedy_best_first(board: Board, H, timeout=60) -> Node:
 
         if current_node.is_goal_state():
             elapsed = round(time.time() - start_time, 2)
-            print(f'{visited_nodes} visited and {created_nodes} created nodes in {elapsed} seconds')
+            print(f'Greedy Best First: {visited_nodes} visited and {created_nodes} created nodes in {elapsed} seconds')
             return current_node
 
         #--------This is only related to time execution--------#
@@ -115,7 +115,7 @@ def a_star(board: Board, H, timeout=60) -> Node:
 
         if current_node.is_goal_state():
             elapsed = round(time.time() - start_time, 2)
-            print(f'{visited_nodes} visited and {created_nodes} created nodes in {elapsed} seconds')
+            print(f'A*: {visited_nodes} visited and {created_nodes} created nodes in {elapsed} seconds')
             return current_node
 
         #--------This is only related to time execution--------#
@@ -130,7 +130,6 @@ def a_star(board: Board, H, timeout=60) -> Node:
         if hashed_node in closed_list:
             if closed_list[hashed_node].g_n <= current_node.g_n:     # we previously got to this configuration with lower f_n than we do right now so ignore
                 continue
-
 
         closed_list[hashed_node] = current_node
         for s in current_node.successors(heuristic_func=H):
@@ -155,7 +154,7 @@ def heuristic1(n: Node) -> int:
 
 
 def heuristic2(n: Node) -> int:
-    '''This heuristic computes the number of tiles out of row and the number of tiles out of column'''
+    '''This heuristic computes the number of tiles out of row place and column place.'''
     goal_states = n.board.generate_goal_states()
     rows, cols = n.board.puzzle.shape
 
@@ -184,6 +183,7 @@ def heuristic2(n: Node) -> int:
 
     return int(min(total_out_of_place))
 
+
 def heuristic3(n: Node) -> int:
     '''This heuristic computes the Euclidean distance of the tiles'''
     goal_states = n.board.generate_goal_states()
@@ -198,6 +198,7 @@ def heuristic3(n: Node) -> int:
 
     return int(min(total_euclidean))
 
+
 def heuristic4(n: Node) -> int:
     '''This heuristic computes the permutation inversion of the tiles'''
     goal_states = n.board.generate_goal_states()
@@ -209,6 +210,7 @@ def heuristic4(n: Node) -> int:
             total[i] += abs(j - np.where(goal_states[i] == n.board.puzzle.flatten()[j])[0][0])
 
     return int(min(total))
+
 
 def write_results_to_disk(solution: str, search: str, algo_name: str, puzzle_number: int, heuristic: str = None) -> bool:
     '''
