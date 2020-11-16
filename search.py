@@ -25,13 +25,13 @@ def uniform_cost(board: Board, timeout=60) -> Node:
         visited_nodes += 1
 
         if current_node.is_goal_state():
-            print(f'Visited {visited_nodes} nodes')
+            elapsed = round(time.time() - start_time, 2)
+            print(f'{visited_nodes} visited and {created_nodes} created nodes in {elapsed} seconds')
             return current_node
 
         #--------This is only related to time execution--------#
         if visited_nodes % 10000 == 0 and timeout > 0:
             elapsed = round(time.time() - start_time, 2)
-            print(f'{visited_nodes} nodes visited and {created_nodes} nodes created in {elapsed} seconds')
             if elapsed > timeout:
                 return current_node
         #--------This is only related to time execution--------#
@@ -51,7 +51,7 @@ def uniform_cost(board: Board, timeout=60) -> Node:
     return current_node
 
 
-def greedy_best_first(board: Board, H, timeout=0) -> Node:
+def greedy_best_first(board: Board, H, timeout=60) -> Node:
 
     start_time = time.time()
     root = Node(is_root=True, board=board, heuristic_func=H)
@@ -70,13 +70,13 @@ def greedy_best_first(board: Board, H, timeout=0) -> Node:
         visited_nodes += 1
 
         if current_node.is_goal_state():
-            print(f'Visited {visited_nodes} nodes')
+            elapsed = round(time.time() - start_time, 2)
+            print(f'{visited_nodes} visited and {created_nodes} created nodes in {elapsed} seconds')
             return current_node
 
         #--------This is only related to time execution--------#
         if visited_nodes % 10000 == 0 and timeout > 0:
             elapsed = round(time.time() - start_time, 2)
-            print(f'{visited_nodes} nodes visited and {created_nodes} nodes created in {elapsed} seconds')
             if elapsed > timeout:
                 return current_node
         #--------This is only related to time execution--------#
@@ -114,13 +114,13 @@ def a_star(board: Board, H, timeout=60) -> Node:
         visited_nodes += 1
 
         if current_node.is_goal_state():
-            print(f'Visited {visited_nodes} nodes')
+            elapsed = round(time.time() - start_time, 2)
+            print(f'{visited_nodes} visited and {created_nodes} created nodes in {elapsed} seconds')
             return current_node
 
         #--------This is only related to time execution--------#
         if visited_nodes % 10000 == 0 and timeout > 0:
             elapsed = round(time.time() - start_time, 2)
-            print(f'{visited_nodes} nodes visited and {created_nodes} nodes created in {elapsed} seconds')
             if elapsed > timeout:
                 return current_node
         #--------This is only related to time execution--------#
@@ -128,8 +128,9 @@ def a_star(board: Board, H, timeout=60) -> Node:
         hashed_node = tuple(current_node.board.puzzle.flatten())
 
         if hashed_node in closed_list:
-            if closed_list[hashed_node].f_n < current_node.f_n:     # we previously got to this configuration with lower f_n than we do right now so ignore
+            if closed_list[hashed_node].g_n <= current_node.g_n:     # we previously got to this configuration with lower f_n than we do right now so ignore
                 continue
+
 
         closed_list[hashed_node] = current_node
         for s in current_node.successors(heuristic_func=H):
@@ -183,7 +184,7 @@ def heuristic2(n: Node) -> int:
 
     return int(min(total_out_of_place))
 
-def heuristic3(n: Node) -> float:
+def heuristic3(n: Node) -> int:
     '''This heuristic computes the Euclidean distance of the tiles'''
     goal_states = n.board.generate_goal_states()
     rows, cols = n.board.puzzle.shape
@@ -195,7 +196,7 @@ def heuristic3(n: Node) -> float:
         puzzle = n.board.puzzle
         total_euclidean[i] = np.linalg.norm(puzzle - state)
 
-    return float(min(total_euclidean))
+    return int(min(total_euclidean))
 
 def heuristic4(n: Node) -> int:
     '''This heuristic computes the permutation inversion of the tiles'''
@@ -253,8 +254,8 @@ if __name__ == "__main__":
         print(f'start puzzle:\n{start_puzzle}')
         experiments = {
             "uc":   uniform_cost(start_puzzle),
-            "gbf": greedy_best_first(start_puzzle, H=heuristic3),
-            "A*": a_star(start_puzzle, H=heuristic3)
+            "gbf": greedy_best_first(start_puzzle, H=heuristic1),
+            "A*": a_star(start_puzzle, H=heuristic1)
         }
         for algo, result in experiments.items():
             print(f'{algo} found with cost = {result.total_cost}:\n{result.board}\n')
