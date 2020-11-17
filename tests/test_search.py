@@ -25,7 +25,7 @@ def test_2x4_ufc_search():
         print(board)
         result = uniform_cost(board)
         print("Solved!")
-        print(result.board)
+        print(result["current_node"].board)
         assert result["current_node"].board.is_goal_state(), "The board could not be solved!"
 
 def test_3x3_ufc_board():
@@ -51,5 +51,5 @@ def test_3x3_ufc_board():
         print(board)
         result = uniform_cost(board)
         print("Solved!")
-        print(result.board)
-        assert result["current_node"].board.is_goal_state(), "The board could not be solved!"
+        print(result["current_node"].board)
+        assert result["current_node"].is_goal_state(), "The board could not be solved!"

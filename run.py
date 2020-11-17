@@ -3,13 +3,17 @@ import numpy as np
 from board import Board
 import heuristics, shutil
 
-def write_report(search_length: tuple, sol_length: tuple, time: tuple):
+def write_report(search_length: tuple, sol_length: tuple, time: tuple, costs: tuple, timeouts: tuple):
     sol_total_length = f'Total length of solution paths: {sol_length[0]} line(s)\n'
     sol_avg_length = f'Average length of solution paths: {round(sol_length[1], 3)} line(s)\n'
     search_total_length = f'Total length of search paths: {search_length[0]} line(s)\n'
     search_avg_length = f'Average length of search paths: {round(search_length[1], 3)} line(s)\n'
     total_time = f'The total execution time is: {round(time[0], 2)} seconds\n'
-    avg_time = f'The average execution time is: {round(time[1], 2)} seconds'
+    avg_time = f'The average execution time is: {round(time[1], 2)} seconds\n'
+    total_cost = f'The total cost is: {costs[0]}\n'
+    avg_cost = f'The average cost is: {round(costs[1], 2)}\n'
+    total_timeouts = f'The total number of timeouts is: {timeouts[0]} timeout(s)\n'
+    avg_timeouts = f'The average number of timeouts is: {timeouts[1]} timeout(s)'
 
     with open("analysis.txt", 'w') as f:
         f.write(str(sol_total_length))
@@ -18,8 +22,30 @@ def write_report(search_length: tuple, sol_length: tuple, time: tuple):
         f.write(str(search_avg_length))
         f.write(str(total_time))
         f.write(str(avg_time))
+        f.write(str(total_cost))
+        f.write(str(avg_cost))
+        f.write(str(total_timeouts))
+        f.write(str(avg_timeouts))
 
     print(f"Your report was generated at {os.path.abspath('analysis.txt')}")
+
+def compute_timeouts(timeouts: list):
+    '''
+    The following function returns the average and total number of timeouts.
+    '''
+    total_timeouts = np.sum(np.where(timeouts == False))
+    avg_timeouts = total_timeouts / len(timeouts)
+
+    return (avg_timeouts, total_timeouts)
+
+def compute_cost_stats(costs: list) -> tuple: 
+    '''
+    The following function returns a tuple of the total and average cost.
+    '''
+    total_cost = np.sum(costs)
+    avg_cost = np.average(costs)
+
+    return avg_cost, total_cost
 
 def compute_time_stats(time_stats: list) -> tuple:
     '''
@@ -46,7 +72,7 @@ def compute_length_stats(fileType: str) -> tuple:
     avg_length_solution = num_of_lines / num_of_files
     return (avg_length_solution, num_of_lines)
 
-def generate_analysis_report(time_taken: list):
+def generate_analysis_report(results: list):
     '''
     The following function generates a report consisting of:
     1 - average & total length of the solution and search paths
@@ -56,15 +82,20 @@ def generate_analysis_report(time_taken: list):
     '''
     avg_sol, len_sol = compute_length_stats("solution")
     avg_search, len_search = compute_length_stats("search")
-    
-    total_time_taken = 0
-    avg_time_taken = 0
-    for puzzles in time_taken:
-        avg_time, total_time = compute_time_stats(puzzles)
-        total_time_taken += total_time
-        avg_time_taken += avg_time
 
-    write_report((len_search, avg_search), (len_sol, avg_sol), (total_time_taken, avg_time_taken))
+    timeout_values = []
+    cost_values = []
+    time_taken_values = []
+    for puzzles in results:
+        timeout_values.append(puzzles["success"])
+        cost_values.append(puzzles["current_node"].g_n)
+        time_taken_values.append(puzzles["runtime"])
+    
+    avg_timeouts, total_timeouts = compute_timeouts(timeout_values)
+    avg_cost, total_cost = compute_cost_stats(cost_values)
+    avg_time, total_time = compute_time_stats(time_taken_values)
+    
+    write_report((len_search, avg_search), (len_sol, avg_sol), (total_time, avg_time), (total_cost, avg_cost), (avg_timeouts, total_timeouts))
 
 def generate_random_puzzles(numOfPuzzles: int) -> list:
     '''
@@ -124,7 +155,7 @@ if __name__ == "__main__":
         puzzles = generate_random_puzzles(numOfPuzzles)
 
     puzzleNumber = 0
-    time_taken = []
+    res = []
 
     if os.path.isdir("results"):
         shutil.rmtree("results")
@@ -145,21 +176,21 @@ if __name__ == "__main__":
             "A*": search.a_star(start_puzzle, H=heuristics.hamming_distance)
         }
         times = []
+        timeouts = []
         for algo, result in experiments_h1.items():
-            times.append(result["runtime"])
+            res.append(result)
             print(f'{algo} found with cost = {result["current_node"].total_cost}:\n{result["current_node"].board}\n')
             solution_str, search_str = result["current_node"].generate_solution_and_search_string(algo)
             if algo == "ucs": search.write_results_to_disk(solution_str, search_str, algo, puzzleNumber)
             else: search.write_results_to_disk(solution_str, search_str, algo, puzzleNumber, 'h1')
         for algo, result in experiments_h2.items():
-            times.append(result["runtime"])
+            res.append(result)
             print(f'{algo} found with cost = {result["current_node"].total_cost}:\n{result["current_node"].board}\n')
             solution_str, search_str = result["current_node"].generate_solution_and_search_string(algo)
             if algo == "ucs": search.write_results_to_disk(solution_str, search_str, algo, puzzleNumber)
             else: search.write_results_to_disk(solution_str, search_str, algo, puzzleNumber, 'h2')
         puzzleNumber += 1
-        time_taken.append(times)
 
-    generate_analysis_report(time_taken)
+    generate_analysis_report(res)
 
     print("Thank you for using X-solver! Written by Ribal Aladeeb & Mohanad Arafe")
