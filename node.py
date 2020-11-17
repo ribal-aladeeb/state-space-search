@@ -21,8 +21,8 @@ class Node:
             self.simple_cost = 0
             self.total_cost = 0
         else:
-            assert move != None, "A hashed_node should always be created with a move argument when not root"
-            assert parent != None, "If a hashed_node is not root, parent cannot be None"
+            assert move != None, "A node should always be created with a move argument when not root"
+            assert parent != None, "If a node is not root, parent cannot be None"
             self.start: tuple = move['start']
             self.end: tuple = move['end']
             self.board: Board = move['board']

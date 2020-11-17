@@ -1,5 +1,6 @@
 from node import Node
 import numpy as np
+import math
 
 
 def hamming_distance(n: Node) -> int:
@@ -16,6 +17,31 @@ def hamming_distance(n: Node) -> int:
         tiles_out_of_place.append(num_tiles)
 
     return int(min(tiles_out_of_place))
+
+
+def manhattan_distance(n: Node) -> int:
+
+    goal_states = n.board.generate_goal_states()
+    puzzle = n.board.puzzle
+    man_dist = [0, 0]  # one for each goal state, always 2
+
+    for i in range(len(goal_states)):
+        goal = goal_states[i].reshape(n.board.puzzle.shape)
+
+        for y in range(puzzle.shape[0]):  # x y are grid coordinate
+            for x in range(puzzle.shape[1]):
+
+                tile_value = puzzle[y, x]
+                if tile_value == 0:
+                    continue
+                goal_coordinate = np.where(goal == tile_value)
+                y_goal = goal_coordinate[0][0]
+                x_goal = goal_coordinate[1][0]
+
+                distance = math.fabs(y_goal-y) + math.fabs(x_goal-x)
+                man_dist[i] += int(distance)
+
+    return min(man_dist)
 
 
 def row_col_out_of_place(n: Node) -> int:
