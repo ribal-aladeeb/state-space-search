@@ -1,7 +1,11 @@
-import argparse, sys, search, os, glob
+import search
+import os
+import glob
 import numpy as np
 from board import Board
-import heuristics, shutil
+import heuristics
+import shutil
+
 
 def write_report(search_length: tuple, sol_length: tuple, time: tuple, costs: tuple, timeouts: tuple):
     sol_total_length = f'Total length of solution paths: {sol_length[0]} line(s)\n'
@@ -15,7 +19,7 @@ def write_report(search_length: tuple, sol_length: tuple, time: tuple, costs: tu
     total_timeouts = f'The total number of timeouts is: {timeouts[0]} timeout(s)\n'
     avg_timeouts = f'The average number of timeouts is: {timeouts[1]} timeout(s)'
 
-    with open("analysis.txt", 'w') as f:
+    with open("results/analysis.txt", 'w') as f:
         f.write(str(sol_total_length))
         f.write(str(sol_avg_length))
         f.write(str(search_total_length))
@@ -27,7 +31,8 @@ def write_report(search_length: tuple, sol_length: tuple, time: tuple, costs: tu
         f.write(str(total_timeouts))
         f.write(str(avg_timeouts))
 
-    print(f"Your report was generated at {os.path.abspath('analysis.txt')}")
+    print(f"Your report was generated at {os.path.abspath('results/analysis.txt')}")
+
 
 def compute_timeouts(timeouts: list):
     '''
@@ -38,7 +43,7 @@ def compute_timeouts(timeouts: list):
 
     return (avg_timeouts, total_timeouts)
 
-def compute_cost_stats(costs: list) -> tuple: 
+def compute_cost_stats(costs: list) -> tuple:
     '''
     The following function returns a tuple of the total and average cost.
     '''
@@ -58,6 +63,7 @@ def compute_time_stats(time_stats: list) -> tuple:
 
     return avg_time, total_time
 
+
 def compute_length_stats(fileType: str) -> tuple:
     '''
     The following function inputs a file type [solution, search] and
@@ -65,7 +71,7 @@ def compute_length_stats(fileType: str) -> tuple:
     (avg, total)
     '''
     num_of_lines = 0
-    num_of_files = 0   
+    num_of_files = 0
     for fileName in glob.glob(f"results/*{fileType}*"):
         num_of_lines += sum(1 for line in open(fileName))
         num_of_files += 1
@@ -90,12 +96,13 @@ def generate_analysis_report(results: list):
         timeout_values.append(puzzles["success"])
         cost_values.append(puzzles["current_node"].g_n)
         time_taken_values.append(puzzles["runtime"])
-    
+
     avg_timeouts, total_timeouts = compute_timeouts(timeout_values)
     avg_cost, total_cost = compute_cost_stats(cost_values)
     avg_time, total_time = compute_time_stats(time_taken_values)
-    
+
     write_report((len_search, avg_search), (len_sol, avg_sol), (total_time, avg_time), (total_cost, avg_cost), (avg_timeouts, total_timeouts))
+
 
 def generate_random_puzzles(numOfPuzzles: int) -> list:
     '''
@@ -108,10 +115,11 @@ def generate_random_puzzles(numOfPuzzles: int) -> list:
         np.random.shuffle(arr)
         puzzles.append(arr)
 
-    np.savetxt('random_puzzles.txt', puzzles, fmt='%.18g', delimiter=' ', newline=os.linesep)
-    print(f"{numOfPuzzles} puzzles generated! File created at {os.path.abspath('random_puzzles.txt')}")
-    
+    np.savetxt('results/random_puzzles.txt', puzzles, fmt='%.18g', delimiter=' ', newline=os.linesep)
+    print(f"{numOfPuzzles} puzzles generated! File created at {os.path.abspath('results/random_puzzles.txt')}")
+
     return puzzles
+
 
 def convert_to_numpy_arrays(file_name: str) -> list:
     '''
@@ -128,7 +136,8 @@ def convert_to_numpy_arrays(file_name: str) -> list:
         np_puzzle.append(np.fromstring(puzzle, dtype=int, sep=' '))
 
     return np_puzzle
-    
+
+
 if __name__ == "__main__":
     print("Welcome to the X-puzzle solver!")
     puzzles = []
@@ -136,6 +145,11 @@ if __name__ == "__main__":
     while (choice not in ["1", "2"]):
         print("Please enter a valid value (1 or 2)")
         choice = input("Would you like to use an [1] INPUT FILE or [2] GENERATE RANDOM BOARDS?: ")
+
+    if os.path.isdir("results"):
+        shutil.rmtree("results")
+
+    os.makedirs("results")
 
     if choice == "1":
         print(f"Please place the file in the root directory at {os.path.abspath(os.getcwd())}")
@@ -145,7 +159,7 @@ if __name__ == "__main__":
             fileName = input("Please enter the file name: ")
 
         puzzles = convert_to_numpy_arrays(fileName)
-    
+
     if choice == "2":
         numOfPuzzles = input("How many puzzles would you like to generate?: ")
         while (not numOfPuzzles.isdigit() or int(numOfPuzzles) < 1):
@@ -157,10 +171,6 @@ if __name__ == "__main__":
     puzzleNumber = 0
     res = []
 
-    if os.path.isdir("results"):
-        shutil.rmtree("results")
-    
-    os.makedirs("results")
 
     for p in puzzles:
         start_puzzle: Board = Board(puzzle=p.reshape(2, 4))
@@ -181,14 +191,18 @@ if __name__ == "__main__":
             res.append(result)
             print(f'{algo} found with cost = {result["current_node"].total_cost}:\n{result["current_node"].board}\n')
             solution_str, search_str = result["current_node"].generate_solution_and_search_string(algo)
-            if algo == "ucs": search.write_results_to_disk(solution_str, search_str, algo, puzzleNumber)
-            else: search.write_results_to_disk(solution_str, search_str, algo, puzzleNumber, 'h1')
+            if algo == "ucs":
+                search.write_results_to_disk(solution_str, search_str, algo, puzzleNumber)
+            else:
+                search.write_results_to_disk(solution_str, search_str, algo, puzzleNumber, 'h1')
         for algo, result in experiments_h2.items():
             res.append(result)
             print(f'{algo} found with cost = {result["current_node"].total_cost}:\n{result["current_node"].board}\n')
             solution_str, search_str = result["current_node"].generate_solution_and_search_string(algo)
-            if algo == "ucs": search.write_results_to_disk(solution_str, search_str, algo, puzzleNumber)
-            else: search.write_results_to_disk(solution_str, search_str, algo, puzzleNumber, 'h2')
+            if algo == "ucs":
+                search.write_results_to_disk(solution_str, search_str, algo, puzzleNumber)
+            else:
+                search.write_results_to_disk(solution_str, search_str, algo, puzzleNumber, 'h2')
         puzzleNumber += 1
 
     generate_analysis_report(res)
