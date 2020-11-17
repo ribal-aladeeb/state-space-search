@@ -1,7 +1,6 @@
-from search import Node, heuristic2, uniform_cost, heuristic1
+from search import Node, uniform_cost
 from board import Board
 import numpy as np
-
 
 def test_2x4_ufc_search():
     print()
@@ -27,8 +26,7 @@ def test_2x4_ufc_search():
         result = uniform_cost(board)
         print("Solved!")
         print(result.board)
-        assert result.board.is_goal_state(), "The board could not be solved!"
-
+        assert result["current_node"].board.is_goal_state(), "The board could not be solved!"
 
 def test_3x3_ufc_board():
 
@@ -54,14 +52,4 @@ def test_3x3_ufc_board():
         result = uniform_cost(board)
         print("Solved!")
         print(result.board)
-        assert result.board.is_goal_state(), "The board could not be solved!"
-
-
-def test_heuristic2():
-    b = Board(puzzle=np.array([
-        [0, 5, 6, 7],
-        [1, 2, 3, 4] 
-    ]))
-
-    node = Node(is_root=True, board=b, heuristic_func=heuristic2)
-    assert heuristic2(node) == 9, "The heuristic is wrongly calculated!"
+        assert result["current_node"].board.is_goal_state(), "The board could not be solved!"

@@ -53,7 +53,7 @@ class Node:
     def generate_solution_and_search_string(self, algo: str) -> Tuple[str, str]:
         '''
         This function returns the strings needed to create the solution.txt and
-        search.txt files. The algo parameter takes one of ['uc' , 'gbf', 'a*'].
+        search.txt files. The algo parameter takes one of ['ucs' , 'gbf', 'a*'].
         '''
         solution = ''
         search = ''
@@ -70,7 +70,7 @@ class Node:
 
             f = current_node.f_n if algo.lower() == 'a*' else 0
             g = 0 if algo.lower() == 'gbf' else current_node.g_n
-            h = 0 if algo.lower() == 'uc' else current_node.h_n
+            h = 0 if algo.lower() == 'ucs' else current_node.h_n
 
             search = f'{f} {g} {h} {board_as_string}\n' + search
 

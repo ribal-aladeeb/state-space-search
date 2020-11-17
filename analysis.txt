@@ -1,0 +1,6 @@
+Total length of solution paths: 126 line(s)
+Average length of solution paths: 12.6 line(s)
+Total length of search paths: 126 line(s)
+Average length of search paths: 12.6 line(s)
+The total execution time is: 19.53 seconds
+The average execution time is: 3.26 seconds

@@ -2,10 +2,7 @@ import numpy as np
 from board import Board
 from node import Node
 from queue import PriorityQueue
-import os
-import time
-import heuristics
-
+import os, time, heuristics
 
 def uniform_cost(board: Board, timeout=60) -> Node:
 
@@ -28,13 +25,26 @@ def uniform_cost(board: Board, timeout=60) -> Node:
         if current_node.is_goal_state():
             elapsed = round(time.time() - start_time, 2)
             print(f'Uniform Cost: {visited_nodes} visited and {created_nodes} created nodes in {elapsed} seconds')
-            return current_node
+            return {'current_node':current_node, 
+                    'runtime':elapsed, 
+                    'visited_nodes':visited_nodes, 
+                    'created_nodes': created_nodes, 
+                    'success': True,
+                    'message': 'solution found'
+                }
 
         #--------This is only related to time execution--------#
         if visited_nodes % 10000 == 0 and timeout > 0:
             elapsed = round(time.time() - start_time, 2)
             if elapsed > timeout:
-                return current_node
+                print("Timeout!")
+                return {'current_node':current_node, 
+                        'runtime':elapsed, 
+                        'visited_nodes':visited_nodes,
+                        'created_nodes': created_nodes,
+                        'success': False,
+                        'message': f"timeout after {timeout} seconds"
+                    }
         #--------This is only related to time execution--------#
 
         hashed_node = tuple(current_node.board.puzzle.flatten())
@@ -49,8 +59,13 @@ def uniform_cost(board: Board, timeout=60) -> Node:
             open_list.put((s.total_cost, created_nodes, s))
 
     print("This puzzle configuration has no result")
-    return current_node
-
+    return {'current_node':current_node, 
+            'runtime':elapsed,
+            'visited_nodes':visited_nodes,
+            'created_nodes': created_nodes,
+            'success': False,
+            'message': 'no more nodes in open list'
+    }
 
 def greedy_best_first(board: Board, H, timeout=60) -> Node:
 
@@ -73,13 +88,26 @@ def greedy_best_first(board: Board, H, timeout=60) -> Node:
         if current_node.is_goal_state():
             elapsed = round(time.time() - start_time, 2)
             print(f'Greedy Best First: {visited_nodes} visited and {created_nodes} created nodes in {elapsed} seconds')
-            return current_node
+            return {'current_node':current_node, 
+                    'runtime':elapsed, 
+                    'visited_nodes':visited_nodes,
+                    'created_nodes': created_nodes,
+                    'success': True,
+                    'message': 'solution found'
+            }
 
         #--------This is only related to time execution--------#
         if visited_nodes % 10000 == 0 and timeout > 0:
             elapsed = round(time.time() - start_time, 2)
             if elapsed > timeout:
-                return current_node
+                print("Timeout!")
+                return {'current_node':current_node, 
+                        'runtime':elapsed, 
+                        'visited_nodes':visited_nodes,
+                        'created_nodes': created_nodes,
+                        'success': False,
+                        'message': f"timeout after {timeout} seconds"
+                }
         #--------This is only related to time execution--------#
 
         hashed_node = tuple(current_node.board.puzzle.flatten())
@@ -93,7 +121,14 @@ def greedy_best_first(board: Board, H, timeout=60) -> Node:
             open_list.put((s.h_n, created_nodes, s))
 
     print("This puzzle configuration has no result")
-    return current_node
+    return {
+        'current_node':current_node, 
+        'runtime':elapsed, 
+        'visited_nodes':visited_nodes, 
+        'created_nodes': created_nodes, 
+        'success': False, 
+        'message': 'no more nodes in open list'
+    }
 
 
 def a_star(board: Board, H, timeout=60) -> Node:
@@ -117,13 +152,26 @@ def a_star(board: Board, H, timeout=60) -> Node:
         if current_node.is_goal_state():
             elapsed = round(time.time() - start_time, 2)
             print(f'A*: {visited_nodes} visited and {created_nodes} created nodes in {elapsed} seconds')
-            return current_node
+            return {'current_node':current_node, 
+                    'runtime':elapsed, 
+                    'visited_nodes':visited_nodes,
+                    'created_nodes': created_nodes,
+                    'success': True,
+                    'message': 'solution found'
+            }
 
         #--------This is only related to time execution--------#
         if visited_nodes % 10000 == 0 and timeout > 0:
             elapsed = round(time.time() - start_time, 2)
             if elapsed > timeout:
-                return current_node
+                print("Timeout!")
+                return {'current_node':current_node, 
+                        'runtime':elapsed, 
+                        'visited_nodes':visited_nodes,
+                        'created_nodes': created_nodes,
+                        'success': False,
+                        'message': f"timeout after {timeout} seconds"
+                }
         #--------This is only related to time execution--------#
 
         hashed_node = tuple(current_node.board.puzzle.flatten())
@@ -138,24 +186,25 @@ def a_star(board: Board, H, timeout=60) -> Node:
             open_list.put((s.f_n, created_nodes, s))
 
     print("This puzzle configuration has no result")
-    return current_node
-
+    return {
+        'current_node':current_node, 
+        'runtime':elapsed, 
+        'visited_nodes':visited_nodes, 
+        'created_nodes': created_nodes, 
+        'success': False, 
+        'message': 'no more nodes in open list'
+    }
 
 def write_results_to_disk(solution: str, search: str, algo_name: str, puzzle_number: int, heuristic: str = None) -> bool:
     '''
     Writes the contents of the solution and search strings for puzzle_number using algo_name and heurisic
     '''
     algo_name = algo_name.lower()
-    heuristic_string = f'_{heuristic}_' if heuristic != None else ''
+    heuristic_string = f'_{heuristic}_' if heuristic != None else '_'
     sol_name = f'{puzzle_number}_{algo_name}{heuristic_string}solution.txt'
     search_name = f'{puzzle_number}_{algo_name}{heuristic_string}search.txt'
 
     result_dir = 'results'
-
-    if not os.path.isdir(result_dir):
-        os.makedirs(result_dir)
-    else:
-        os.replace(result_dir, result_dir)
 
     with open(os.path.join(result_dir, sol_name), mode='w') as f:
         f.write(solution)
