@@ -137,8 +137,11 @@ def convert_to_numpy_arrays(file_name: str) -> list:
 
     return np_puzzle
 
-
-if __name__ == "__main__":
+def prompt_user() -> list:
+    '''
+    The following function prompts the user input. One can generate random boards or
+    use an input file.
+    '''
     print("Welcome to the X-puzzle solver!")
     puzzles = []
     choice = input("Would you like to use an [1] INPUT FILE or [2] GENERATE RANDOM BOARDS?: ")
@@ -168,43 +171,35 @@ if __name__ == "__main__":
 
         puzzles = generate_random_puzzles(numOfPuzzles)
 
-    puzzleNumber = 0
+    return puzzles
+
+def main(chosen_heurisitics=[heuristics.manhattan_distance, heuristics.row_col_out_of_place]):
+    puzzles = prompt_user()
     res = []
-
-
-    for p in puzzles:
+    for index, p in enumerate(puzzles):
         start_puzzle: Board = Board(puzzle=p.reshape(2, 4))
-        print(f'start puzzle:\n{start_puzzle}')
-        experiments_h1 = {
-            "ucs": search.uniform_cost(start_puzzle),
-            "gbf": search.greedy_best_first(start_puzzle, H=heuristics.row_col_out_of_place),
-            "A*": search.a_star(start_puzzle, H=heuristics.row_col_out_of_place)
-        }
-        experiments_h2 = {
-            "ucs": search.uniform_cost(start_puzzle),
-            "gbf": search.greedy_best_first(start_puzzle, H=heuristics.hamming_distance),
-            "A*": search.a_star(start_puzzle, H=heuristics.hamming_distance)
-        }
-        times = []
-        timeouts = []
-        for algo, result in experiments_h1.items():
-            res.append(result)
-            print(f'{algo} found with cost = {result["current_node"].total_cost}:\n{result["current_node"].board}\n')
-            solution_str, search_str = result["current_node"].generate_solution_and_search_string(algo)
-            if algo == "ucs":
-                search.write_results_to_disk(solution_str, search_str, algo, puzzleNumber)
-            else:
-                search.write_results_to_disk(solution_str, search_str, algo, puzzleNumber, 'h1')
-        for algo, result in experiments_h2.items():
-            res.append(result)
-            print(f'{algo} found with cost = {result["current_node"].total_cost}:\n{result["current_node"].board}\n')
-            solution_str, search_str = result["current_node"].generate_solution_and_search_string(algo)
-            if algo == "ucs":
-                search.write_results_to_disk(solution_str, search_str, algo, puzzleNumber)
-            else:
-                search.write_results_to_disk(solution_str, search_str, algo, puzzleNumber, 'h2')
-        puzzleNumber += 1
+        print('*'*80)
+        print(f'Puzzle {index+1}:\n{start_puzzle}')
+        for i in range(len(chosen_heurisitics)):
+            experiments = {
+                "ucs":   search.uniform_cost(start_puzzle),
+                "gbf": search.greedy_best_first(start_puzzle, H=chosen_heurisitics[i]),
+                "A*": search.a_star(start_puzzle, H=chosen_heurisitics[i])
+            }
+            print(f'\nUsing heuristic \"{chosen_heurisitics[i].__name__}\":')
+            for result in list(experiments.values()):
+                res.append(result)
+                print(f"\n\t{result['algo']} found with cost = {result['current_node'].total_cost} in {result['runtime']} seconds:\n{result['current_node'].board}\n")
+                solution_str = result['current_node'].generate_solution_string(result['algo'])
+                search_str = search.generate_search_string(result['search_space'], result['algo'])
+                if result['algo'] == "ucs":
+                    search.write_results_to_disk(solution_str, search_str, result['algo'], index)
+                else:
+                    search.write_results_to_disk(solution_str, search_str, result['algo'], index, 'h2')
 
     generate_analysis_report(res)
 
     print("Thank you for using X-solver! Written by Ribal Aladeeb & Mohanad Arafe")
+
+if __name__ == "__main__":
+   main()

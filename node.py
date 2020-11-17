@@ -3,6 +3,7 @@ from typing import List, Tuple
 from board import Board
 import numpy as np
 
+
 class Node:
 
     def __init__(self,
@@ -12,6 +13,8 @@ class Node:
                  is_root: bool = False,
                  board: Board = None,
                  heuristic_func=None):
+
+        self.is_root = is_root
 
         if is_root:
             assert board != None, "There should be a board argument if is_root=True"
@@ -50,13 +53,12 @@ class Node:
     def is_goal_state(self) -> bool:
         return self.board.is_goal_state()
 
-    def generate_solution_and_search_string(self, algo: str) -> Tuple[str, str]:
+    def generate_solution_string(self, algo: str) -> Tuple[str, str]:
         '''
         This function returns the strings needed to create the solution.txt and
         search.txt files. The algo parameter takes one of ['ucs' , 'gbf', 'a*'].
         '''
         solution = ''
-        search = ''
 
         current_node = self
 
@@ -68,16 +70,9 @@ class Node:
 
             solution = f'{moved_tile_value} {current_node.simple_cost} {board_as_string}\n' + solution
 
-            f = current_node.f_n if algo.lower() == 'a*' else 0
-            g = 0 if algo.lower() == 'gbf' else current_node.g_n
-            h = 0 if algo.lower() == 'ucs' else current_node.h_n
-
-            search = f'{f} {g} {h} {board_as_string}\n' + search
-
             current_node = current_node.parent
 
         root_node = current_node.board.line_representation()
         solution = f'0 0 {root_node}\n' + solution
-        search = f'0 0 0 {root_node}\n' + search
 
-        return solution, search
+        return solution
