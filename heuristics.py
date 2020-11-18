@@ -91,7 +91,18 @@ def euclidean_distance(n: Node) -> int:
     for i in range(len(goal_states)):
         state = goal_states[i].reshape(rows, cols)
         puzzle = n.board.puzzle
-        total_euclidean[i] = np.linalg.norm(puzzle - state)
+
+        for y in range(puzzle.shape[0]):
+            for x in range(puzzle.shape[1]):
+                tile_value = puzzle[y, x]
+                if tile_value == 0:
+                    continue
+
+                goal_coordinate = np.where(state == tile_value)
+                y_goal = goal_coordinate[0][0]
+                x_goal = goal_coordinate[1][0]
+                distance = math.sqrt((y_goal - y)**2 + (x_goal-x)**2)
+                total_euclidean[i] += distance
 
     return int(min(total_euclidean))
 
