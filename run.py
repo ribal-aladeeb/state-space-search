@@ -19,7 +19,7 @@ def write_report(search_length: tuple, sol_length: tuple, time: tuple, costs: tu
     total_timeouts = f'The total number of timeouts is: {timeouts[1]} timeout(s)\n'
     avg_timeouts = f'The average number of timeouts is: {round(timeouts[0], 3)} timeout(s)'
 
-    with open("results/analysis.txt", 'w') as f:
+    with open("analysis.txt", 'w') as f:
         f.write(str(sol_total_length))
         f.write(str(sol_avg_length))
         f.write(str(search_total_length))
@@ -31,7 +31,7 @@ def write_report(search_length: tuple, sol_length: tuple, time: tuple, costs: tu
         f.write(str(total_timeouts))
         f.write(str(avg_timeouts))
 
-    print(f"Your report was generated at {os.path.abspath('results/analysis.txt')}")
+    print(f"Your report was generated at {os.path.abspath('analysis.txt')}")
 
 
 def compute_timeouts(timeouts: list):
@@ -115,8 +115,8 @@ def generate_random_puzzles(numOfPuzzles: int) -> list:
         np.random.shuffle(arr)
         puzzles.append(arr)
 
-    np.savetxt('results/random_puzzles.txt', puzzles, fmt='%.18g', delimiter=' ', newline=os.linesep)
-    print(f"{numOfPuzzles} puzzles generated! File created at {os.path.abspath('results/random_puzzles.txt')}")
+    np.savetxt('random_puzzles.txt', puzzles, fmt='%.18g', delimiter=' ', newline=os.linesep)
+    print(f"{numOfPuzzles} puzzles generated! File created at {os.path.abspath('random_puzzles.txt')}")
 
     return puzzles
 
