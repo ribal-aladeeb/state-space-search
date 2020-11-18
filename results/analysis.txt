@@ -1,0 +1,10 @@
+Total length of solution paths: 3379 line(s)
+Average length of solution paths: 13.516 line(s)
+Total length of search paths: 942356 line(s)
+Average length of search paths: 3769.424 line(s)
+The total execution time is: 320.51 seconds
+The average execution time is: 1.07 seconds
+The total cost is: 5126
+The average cost is: 17.09
+The total number of timeouts is: 0 timeout(s)
+The average number of timeouts is: 0.0 timeout(s)

@@ -16,8 +16,8 @@ def write_report(search_length: tuple, sol_length: tuple, time: tuple, costs: tu
     avg_time = f'The average execution time is: {round(time[1], 2)} seconds\n'
     total_cost = f'The total cost is: {costs[0]}\n'
     avg_cost = f'The average cost is: {round(costs[1], 2)}\n'
-    total_timeouts = f'The total number of timeouts is: {timeouts[0]} timeout(s)\n'
-    avg_timeouts = f'The average number of timeouts is: {timeouts[1]} timeout(s)'
+    total_timeouts = f'The total number of timeouts is: {timeouts[1]} timeout(s)\n'
+    avg_timeouts = f'The average number of timeouts is: {round(timeouts[0], 3)} timeout(s)'
 
     with open("results/analysis.txt", 'w') as f:
         f.write(str(sol_total_length))
@@ -38,7 +38,7 @@ def compute_timeouts(timeouts: list):
     '''
     The following function returns the average and total number of timeouts.
     '''
-    total_timeouts = np.sum(np.where(timeouts == False))
+    total_timeouts = len(timeouts) - np.sum(timeouts)
     avg_timeouts = total_timeouts / len(timeouts)
 
     return (avg_timeouts, total_timeouts)
@@ -192,10 +192,10 @@ def main(chosen_heurisitics=[heuristics.manhattan_distance, heuristics.row_col_o
                 print(f"\n\t{result['algo']} found with cost = {result['current_node'].total_cost} in {result['runtime']} seconds:\n{result['current_node'].board}\n")
                 solution_str = result['current_node'].generate_solution_string(result['algo'])
                 search_str = search.generate_search_string(result['search_space'], result['algo'])
-                if result['algo'] == "ucs":
+                if result['algo'] == "UCS":
                     search.write_results_to_disk(solution_str, search_str, result['algo'], index)
                 else:
-                    search.write_results_to_disk(solution_str, search_str, result['algo'], index, 'h2')
+                    search.write_results_to_disk(solution_str, search_str, result['algo'], index, f'h{i+1}')
 
     generate_analysis_report(res)
 

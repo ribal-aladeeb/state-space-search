@@ -17,14 +17,10 @@ conda activate project1
 ```
 
 ## Run
-In order to run the project, include the text file of puzzles in the root directory of the project. From there, run the following command
+In order to run the project, run the following command:
 ```
-python run.py -i <file_name>
-ex: python run.py -i input.txt
+python run.py
 ```
-Make sure to correctly write the name of the file!
 
-### Otherwise
-
-
-### Credits
+## Output
+You can find the output of the algorithms in the `results` folder. Currently, you should find the output for 50 random 2x4 puzzles. In order to see the puzzles, you can find them in `results/random_puzzles.txt`.
