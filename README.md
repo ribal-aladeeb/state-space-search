@@ -12,8 +12,8 @@ solution to handle bigger boards.
 ### Using Conda
 Make sure you have Conda installed on your machine
 ```
-conda env create --name project1 --file=environment.yml
-conda activate project1
+conda env create --name 472 --file=environment.yml
+conda activate 472
 ```
 
 ## Run
