@@ -23,4 +23,7 @@ python run.py
 ```
 
 ## Output
-You can find the output of the algorithms in the `results` folder. Currently, you should find the output for 50 random 2x4 puzzles. In order to see the puzzles, you can find them in `results/random_puzzles.txt`.
+You can find the output of the algorithms in the `results` folder. Currently,
+you should find the output for 50 random 2x4 puzzles. In order to see the
+puzzles, you can find them in `random_puzzles.txt`. The final stats are in
+`analysis.txt`.

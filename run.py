@@ -43,6 +43,7 @@ def compute_timeouts(timeouts: list):
 
     return (avg_timeouts, total_timeouts)
 
+
 def compute_cost_stats(costs: list) -> tuple:
     '''
     The following function returns a tuple of the total and average cost.
@@ -51,6 +52,7 @@ def compute_cost_stats(costs: list) -> tuple:
     avg_cost = np.average(costs)
 
     return avg_cost, total_cost
+
 
 def compute_time_stats(time_stats: list) -> tuple:
     '''
@@ -77,6 +79,7 @@ def compute_length_stats(fileType: str) -> tuple:
         num_of_files += 1
     avg_length_solution = num_of_lines / num_of_files
     return (avg_length_solution, num_of_lines)
+
 
 def generate_analysis_report(results: list):
     '''
@@ -137,6 +140,7 @@ def convert_to_numpy_arrays(file_name: str) -> list:
 
     return np_puzzle
 
+
 def prompt_user() -> list:
     '''
     The following function prompts the user input. One can generate random boards or
@@ -173,6 +177,7 @@ def prompt_user() -> list:
 
     return puzzles
 
+
 def main(chosen_heurisitics=[heuristics.manhattan_distance, heuristics.row_col_out_of_place]):
     puzzles = prompt_user()
     res = []
@@ -180,14 +185,25 @@ def main(chosen_heurisitics=[heuristics.manhattan_distance, heuristics.row_col_o
         start_puzzle: Board = Board(puzzle=p.reshape(2, 4))
         print('*'*80)
         print(f'Puzzle {index+1}:\n{start_puzzle}')
+
         for i in range(len(chosen_heurisitics)):
             experiments = {
-                "ucs":   search.uniform_cost(start_puzzle),
-                "gbf": search.greedy_best_first(start_puzzle, H=chosen_heurisitics[i]),
-                "A*": search.a_star(start_puzzle, H=chosen_heurisitics[i])
+                "UCS":   search.uniform_cost,
+                "GBF":   search.greedy_best_first,
+                "A*": search.a_star,
             }
             print(f'\nUsing heuristic \"{chosen_heurisitics[i].__name__}\":')
-            for result in list(experiments.values()):
+            results = []
+
+            for algo in experiments:
+                if algo == 'UCS':
+                    if i == 1:
+                        continue
+                    results.append(experiments[algo](start_puzzle))
+                else:
+                    results.append(experiments[algo](start_puzzle, H=chosen_heurisitics[i]))
+
+            for result in results:
                 res.append(result)
                 print(f"\n\t{result['algo']} found with cost = {result['current_node'].total_cost} in {result['runtime']} seconds:\n{result['current_node'].board}\n")
                 solution_str = result['current_node'].generate_solution_string(result['algo'])
@@ -201,5 +217,6 @@ def main(chosen_heurisitics=[heuristics.manhattan_distance, heuristics.row_col_o
 
     print("Thank you for using X-solver! Written by Ribal Aladeeb & Mohanad Arafe")
 
+
 if __name__ == "__main__":
-   main()
+    main()
