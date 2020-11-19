@@ -45,4 +45,4 @@ heuristics.py contains the heuristic functions
 
 ## Analysis of heuristics
 
-In [analysis.ipynb](https://github.com/ribal-aladeeb/state-space-search/blob/main/analysis.ipynb) You can find an insightful analysis of the heuristic functions implemented. Some were taken from the textbook and some others we came up with (although I'm sure we are not the first to do so). We discuss an empirical approach to analysing properties of heuristic functions.
+In [analysis.ipynb](https://github.com/ribal-aladeeb/state-space-search/blob/main/analysis.ipynb) You can find an insightful analysis of the heuristic functions implemented. Some were taken from the textbook and some others we came up with (although I'm sure we are not the first to do so). We discuss an empirical approach to analysing properties of heuristic functions. You can also see how this implementation handles larger puzzles in this [notebook](https://github.com/ribal-aladeeb/state-space-search/blob/main/scaling_up.ipynb).
