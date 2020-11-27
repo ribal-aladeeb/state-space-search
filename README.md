@@ -27,8 +27,8 @@ You will see a prompt that asks you to either [1] provide an input file [2]
 Generate random puzzle. The run script will generate a results/ folder that will
 contain the solution path and search path of every puzzle-algorithm-heuristic
 combination. It will also generate an analysis.txt summary of the results in the
-root of the project. If you choose option [2], the random puzzles will be save
-in random_puzzles.txt in the root of the project
+root of the project. If you choose option [2], the random puzzles will be saved
+in random_puzzles.txt in the root of the project.
 
 ## Navigating the code
 board.py contains a Board class which represents a game of 8-puzzle. It also
@@ -38,11 +38,21 @@ node.py contains a Node class which represents a node in a state-space search
 algorithm. It contains a board along with other state and behavior useful for
 searching.
 
-search.py contains the bulk of the search logic along with a small main function
+search.py contains the bulk of the searching logic along with a small main function
 to run a small test case.
 
-heuristics.py contains the heuristic functions
+heuristics.py contains the heuristic functions implemented.
+
+tests/ contain the unit tests for those classes.
+
 
 ## Analysis of heuristics
 
-In [analysis.ipynb](https://github.com/ribal-aladeeb/state-space-search/blob/main/analysis.ipynb) You can find an insightful analysis of the heuristic functions implemented. Some were taken from the textbook and some others we came up with (although I'm sure we are not the first to do so). We discuss an empirical approach to analysing properties of heuristic functions. You can also see how this implementation handles larger puzzles in this [notebook](https://github.com/ribal-aladeeb/state-space-search/blob/main/scaling_up.ipynb).
+In
+[analysis.ipynb](https://github.com/ribal-aladeeb/state-space-search/blob/main/analysis.ipynb)
+You can find an insightful analysis of the heuristic functions implemented. Some
+were taken from the textbook and some others we came up with (although I'm sure
+we are not the first to do so). We discuss an empirical approach to analysing
+properties of heuristic functions. You can also see how our implementation
+handles larger puzzles in
+[scale_up.ipynb](https://github.com/ribal-aladeeb/state-space-search/blob/main/scaling_up.ipynb).
