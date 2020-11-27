@@ -31,7 +31,7 @@ def write_report(search_length: tuple, sol_length: tuple, time: tuple, costs: tu
         f.write(str(total_timeouts))
         f.write(str(avg_timeouts))
 
-    print(f"Your report was generated at {os.path.abspath('analysis.txt')}")
+    return f"Your report was generated at {os.path.abspath('analysis.txt')}"
 
 
 def compute_timeouts(timeouts: list):
@@ -104,7 +104,11 @@ def generate_analysis_report(results: list):
     avg_cost, total_cost = compute_cost_stats(cost_values)
     avg_time, total_time = compute_time_stats(time_taken_values)
 
-    write_report((len_search, avg_search), (len_sol, avg_sol), (total_time, avg_time), (total_cost, avg_cost), (avg_timeouts, total_timeouts))
+    return write_report((len_search, avg_search),
+                        (len_sol, avg_sol),
+                        (total_time, avg_time),
+                        (total_cost, avg_cost),
+                        (avg_timeouts, total_timeouts))
 
 
 def generate_random_puzzles(numOfPuzzles: int) -> list:
@@ -180,32 +184,41 @@ def prompt_user() -> list:
 
 def main(chosen_heurisitics=[heuristics.manhattan_distance, heuristics.row_col_out_of_place]):
     puzzles = prompt_user()
+    print('Solving...')
+    search_output = ""
     res = []
     for index, p in enumerate(puzzles):
         start_puzzle: Board = Board(puzzle=p.reshape(2, 4))
-        print('*'*80)
+        print('\n'+'*'*80)
+        search_output += '\n'+'*'*80+'\n'
         print(f'Puzzle {index+1}:\n{start_puzzle}')
+        search_output += f'Puzzle {index+1}:\n{start_puzzle}\n'
 
         for i in range(len(chosen_heurisitics)):
             experiments = {
-                "UCS":   search.uniform_cost,
+                # "UCS":   search.uniform_cost,
                 "GBF":   search.greedy_best_first,
                 "A*": search.a_star,
             }
-            print(f'\nUsing heuristic \"{chosen_heurisitics[i].__name__}\":')
+            print(f'\nUsing heuristic "{chosen_heurisitics[i].__name__}":')
+            search_output+= f'\nUsing heuristic "{chosen_heurisitics[i].__name__}":\n'
+
             results = []
 
             for algo in experiments:
-                if algo == 'UCS':
-                    if i == 1:
-                        continue
-                    results.append(experiments[algo](start_puzzle))
-                else:
-                    results.append(experiments[algo](start_puzzle, H=chosen_heurisitics[i]))
+                # if algo == 'UCS':
+                #     if i == 1:
+                #         continue
+                # results.append(experiments[algo](start_puzzle))
+                # else:
+                # results.append(experiments[algo](start_puzzle, H=chosen_heurisitics[i]))
+                results.append(experiments[algo](start_puzzle, H=chosen_heurisitics[i]))
 
             for result in results:
                 res.append(result)
-                print(f"\n\t{result['algo']} found with cost = {result['current_node'].total_cost} in {result['runtime']} seconds:\n{result['current_node'].board}\n")
+                print(f"{result['algo']}\tfound with cost = {result['current_node'].total_cost}\tin {result['runtime']} seconds")
+                search_output += f"{result['algo']}\t\tfound with cost = {result['current_node'].total_cost}\tin {result['runtime']} seconds\n"
+                # print(f"\n\t{result['algo']} found with cost = {result['current_node'].total_cost} in {result['runtime']} seconds:\n{result['current_node'].board}\n")
                 solution_str = result['current_node'].generate_solution_string(result['algo'])
                 search_str = search.generate_search_string(result['search_space'], result['algo'])
                 if result['algo'] == "UCS":
@@ -213,7 +226,13 @@ def main(chosen_heurisitics=[heuristics.manhattan_distance, heuristics.row_col_o
                 else:
                     search.write_results_to_disk(solution_str, search_str, result['algo'], index, f'h{i+1}')
 
-    generate_analysis_report(res)
+    report_message = generate_analysis_report(res)
+    print(f'\n{report_message}')
+    search_output += f'\n{report_message}\n'
+    search_output += "Thank you for using X-solver! Written by Ribal Aladeeb & Mohanad Arafe"
+
+    with open('./search_output.txt', mode='w')as f:
+        f.write(search_output)
 
     print("Thank you for using X-solver! Written by Ribal Aladeeb & Mohanad Arafe")
 
